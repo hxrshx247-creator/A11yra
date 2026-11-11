@@ -1,0 +1,165 @@
+.audit-page {
+  max-width: 74rem;
+  overflow-wrap: anywhere;
+}
+
+.audit-page h2,
+.audit-page h3 {
+  margin: 0;
+  line-height: 1.25;
+}
+
+.audit-page h2 {
+  font-size: 1.3rem;
+}
+
+.audit-page h3 {
+  font-size: 1.125rem;
+}
+
+.audit-progress {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 1rem;
+  padding: clamp(1rem, 4vw, 1.75rem);
+  margin-bottom: 2rem;
+  border: 1px solid #8198a5;
+  border-radius: 1rem;
+  color: #183d54;
+  background: #e9f0f4;
+}
+
+.audit-progress p {
+  margin: 0.3rem 0 0;
+}
+
+.audit-percent {
+  font-size: clamp(1.6rem, 5vw, 2.7rem);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+}
+
+.audit-progress progress {
+  grid-column: 1 / -1;
+  width: 100%;
+  height: 0.625rem;
+  accent-color: var(--accent);
+}
+
+.audit-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1.75rem;
+  align-items: start;
+}
+
+.check-column > h2 {
+  margin-bottom: 0.8rem;
+}
+
+.check-list {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.check-card {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.45rem 0.75rem;
+  width: 100%;
+  padding: 0.65rem 0.85rem;
+  border: 1px solid #898274;
+  border-radius: 0.65rem;
+  color: #262522;
+  background: #fff;
+  text-align: start;
+}
+
+.check-card[aria-selected="true"] {
+  border-color: var(--accent);
+  box-shadow: inset 0.25rem 0 var(--accent);
+  background: #edf4f8;
+}
+
+.badge {
+  display: inline-block;
+  padding: 0.16rem 0.55rem;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.badge--success { color: #195737; background: #eef7ee; }
+.badge--danger { color: #842c24; background: #fff0eb; }
+.badge--warning { color: #70450d; background: #fff3dd; }
+.badge--neutral { color: #3d4d56; background: #f1f4f5; }
+
+.findings-panel {
+  padding: clamp(1rem, 4vw, 1.65rem);
+  border: 1px solid #898274;
+  border-radius: 1rem;
+  background: #fff;
+}
+
+.check-summary {
+  margin: 0.45rem 0 1rem;
+}
+
+.empty-findings {
+  margin-bottom: 0;
+}
+
+.findings-list {
+  display: grid;
+  gap: 1rem;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.finding-card {
+  padding: 1rem;
+  border: 1px solid #b2a99b;
+  border-radius: 0.75rem;
+  background: #faf7f1;
+}
+
+.finding-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin-block: 0.75rem 1rem;
+}
+
+.finding-card dl {
+  margin: 0;
+}
+
+.finding-card dt {
+  font-weight: 700;
+}
+
+.finding-card dd {
+  margin: 0.2rem 0 0.65rem;
+}
+
+.finding-card dd:last-child,
+.finding-note {
+  margin-bottom: 0;
+}
+
+.finding-note {
+  border-top: 1px solid #b2a99b;
+  padding-top: 0.7rem;
+}
+
+@media (min-width: 58em) {
+  .audit-grid {
+    grid-template-columns: minmax(18.5rem, 2fr) minmax(0, 3fr);
+  }
+}
