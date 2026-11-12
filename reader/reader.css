@@ -307,6 +307,10 @@ article .is-reading {
   .reader-layout { display: block; padding: 0; }
   main { color: #000; background: #fff; border: 0; padding: 0; box-shadow: none; }
   article { max-width: none; }
+  article :is(h1, h2, h3, h4, h5, h6), article caption { break-after: avoid; }
+  article :is(tr, caption, figcaption) { break-inside: avoid; }
+  article figcaption { break-before: avoid; }
+  article p:has(+ .table-scroll) { break-after: avoid; break-inside: avoid; }
   a { color: #000; }
   th { background: #fff; }
   td, th { border-color: #000; }

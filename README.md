@@ -70,6 +70,29 @@ npm --prefix frontend run dev
 
 Both setups use [http://127.0.0.1:5173/](http://127.0.0.1:5173/). The defaults work without an API key or mail provider. For configuration and deployment, see [the environment template](.env.example) and [operations guide](docs/OPERATIONS.md).
 
+### Running on alternate ports
+
+If the default ports are occupied, use the following commands after installing the dependencies. This example uses API port `8005` and Vite port `5175`.
+
+API terminal, from `backend` (PowerShell):
+
+```powershell
+$env:A11YRA_PUBLIC_URL = 'http://127.0.0.1:5175'
+$env:A11YRA_CORS_ORIGINS = 'http://127.0.0.1:5175'
+..\.venv\Scripts\python.exe -m uvicorn app.main:app --port 8005
+```
+
+Frontend terminal, from the repository root (PowerShell):
+
+```powershell
+$env:A11YRA_DEV_API_PORT = '8005'
+npm.cmd --prefix frontend run dev -- --port 5175
+```
+
+Open [http://127.0.0.1:5175/](http://127.0.0.1:5175/). Use that exact origin in `A11YRA_CORS_ORIGINS` so sign-in accepts requests from Vite. On macOS or Linux, use `export NAME=value` for the same variables, `../.venv/bin/python` in the API terminal, and `npm` in the frontend terminal.
+
+**Windows:** If Application Control blocks a Python DLL, use Docker or a different environment.
+
 ## Try the four-minute demo
 
 1. Sign in and choose **Try the Stack and Queue lecture**. Its original screen-reader view includes missing title/language, an undescribed image, and a generic link.
@@ -78,6 +101,14 @@ Both setups use [http://127.0.0.1:5173/](http://127.0.0.1:5173/). The defaults w
 4. Continue to export. Open the downloaded offline HTML and try **Reading settings** and the one-click presets.
 
 The six checks cover document title, default language, heading structure and levels, image descriptions, table headers, and link text. The audit page includes an original/repaired linear screen-reader preview. The messy handout shows skipped heading levels, filename-style alt text, an unheaded table, vague links, and missing title/language so reviewers can see issues that require judgment.
+
+| Original screen reader view | Repaired screen reader view |
+| --- | --- |
+| ![Original preview flags the missing document title and language](docs/media/screen-reader-original.png) | ![Repaired preview shows the document title and English (India) language tag](docs/media/screen-reader-repaired.png) |
+
+![Offline learner reader with the Low vision preset selected](docs/media/reader-low-vision.png)
+
+Demo video: [link to be added]
 
 ## Privacy and limitations
 
@@ -116,3 +147,5 @@ node frontend/scripts/check-contrast.mjs
 ```
 
 For browser tests, install the dependencies with `npm --prefix reader ci`. On macOS or Linux, run `npx --prefix reader playwright-core install chromium`. On Windows, the runner uses Microsoft Edge by default. With ports 5173 and 8000 free, run `node reader/run-browser-tests.mjs` from the repository root. It starts isolated services and exercises the teacher workflow, public pages, and reader exports. See the [manual accessibility checklist](docs/ACCESSIBILITY-TEST.md) for screen-reader checks.
+
+License: MIT ([full license text](LICENSE))

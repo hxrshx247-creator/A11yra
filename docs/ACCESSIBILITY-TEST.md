@@ -23,3 +23,13 @@ Use the [demo syllabus](../backend/fixtures/syllabus.docx) in Edge on Windows. R
 - [ ] With a local voice installed, play, pause, resume, and stop. Check that the highlight follows the active text. Also confirm the status message on a device without a suitable offline voice.
 
 Automated tests check specific behavior and markup. They cannot establish whether a learner can complete the task comfortably, whether reading order makes sense, or whether an image description conveys the right information.
+
+## Tested and not tested
+
+Automated checks covered axe on the landing page, upload form, audit dashboard, screen reader preview, and exported reader. Browser tests checked keyboard focus, scrolling, Escape and focus return, reduced motion, reader settings, and offline use. Export tests checked document language, headings, image descriptions, decorative images, and table headers. A narrow-viewport reflow check passed; it approximated 200% zoom.
+
+Manual results to fill in after testing:
+
+- **NVDA in Word and the offline reader:** Pending. Record versions and what NVDA announces for headings, images, tables, and links.
+- **Actual browser zoom at 200%:** Pending. Record browser, viewport, and any clipping or focus issues.
+- **Word Accessibility Checker:** Pending. Record findings and attach before-and-after screenshots for the original and repaired DOCX.
