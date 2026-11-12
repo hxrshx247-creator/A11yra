@@ -119,8 +119,8 @@ export function ExportPage({ documentId }: { documentId: string }) {
         </>
       )}
       <div className={showSuccess ? "complete-state" : undefined}>
-        <p className={hasError ? "page-status form-error" : showSuccess ? "page-status success-message" : "page-status"} role="status">
-          {showSuccess && <Icon name="success" />}{message}
+        <p className={hasError ? "page-status form-error" : showSuccess ? "page-status workflow-success" : "page-status"} role="status">
+          {hasError && <Icon name="error" />}{showSuccess && <Icon name="success" />}{message}
         </p>
       </div>
       {loadError && <a className="action-link" href="/upload">Return to upload</a>}

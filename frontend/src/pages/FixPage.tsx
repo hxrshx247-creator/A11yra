@@ -24,8 +24,9 @@ export function FixPage({ documentId, findingId }: { documentId: string; finding
     <main id="main" className="audit-page" tabIndex={-1}>
       <PageHeading headingRef={heading} title="Review fix" eyebrow="Document engine" />
       <a className="back-to-upload" href={back}>Back to audit</a>
-      <div className={applied ? "page-status success-message" : message ? "page-status" : "visually-hidden"} role="status">
+      <div className={applied ? "page-status workflow-success" : error || (audit && !finding) ? "page-status form-error" : message ? "page-status" : "visually-hidden"} role="status">
         {applied && <Icon name="success" />}
+        {!applied && (error || (audit && !finding)) && <Icon name="error" />}
         {applied ? "Fix applied. Run a new audit to verify it." : message}
       </div>
       {shownFinding && (

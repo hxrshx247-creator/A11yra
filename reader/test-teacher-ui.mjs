@@ -92,7 +92,7 @@ test("teacher flow by keyboard and mouse preserves all five repairs", { timeout:
         await page.keyboard.press("Enter");
         assert.equal(await page.evaluate(() => document.activeElement.id), "main");
       }
-      await activate(page.getByRole("navigation", { name: "Main", exact: true }).getByRole("link", { name: "Sign in", exact: true }));
+      await activate(page.getByRole("main").getByRole("link", { name: "Sign in", exact: true }));
       await page.getByRole("heading", { name: "Sign in", exact: true }).waitFor();
       await page.goto(new URL("/upload?source=workspace#main", app).href);
       await page.waitForURL((url) => url.pathname === "/account/login");
@@ -180,13 +180,13 @@ test("teacher flow by keyboard and mouse preserves all five repairs", { timeout:
 });
 
 test("motion preferences, dialog focus, loading, error, ZIP, and deletion", { timeout: 90_000 }, async () => {
-  const page = await browser.newPage({ reducedMotion: "reduce" });
+  const page = await browser.newPage({ colorScheme: "light", reducedMotion: "reduce" });
   page.setDefaultTimeout(8000);
   try {
     await page.goto(app);
     assert.equal(await page.locator("html").getAttribute("data-motion"), "off");
-    const headerSettings = page.getByRole("button", { name: "Settings" });
-    await headerSettings.press("Enter");
+    const settingsButton = page.getByRole("button", { name: "Settings" });
+    await settingsButton.press("Enter");
     const dialog = page.getByRole("dialog", { name: "Settings" });
     await dialog.waitFor();
     await scan(page);
@@ -196,12 +196,18 @@ test("motion preferences, dialog focus, loading, error, ZIP, and deletion", { ti
     }
     await page.keyboard.press("Escape");
     await dialog.waitFor({ state: "hidden" });
-    assert.equal(await headerSettings.evaluate((node) => node === document.activeElement), true);
+    assert.equal(await settingsButton.evaluate((node) => node === document.activeElement), true);
     await page.reload();
     assert.equal(await page.locator("html").getAttribute("data-motion"), "off");
     await page.emulateMedia({ forcedColors: "active" });
-    assert.equal(await page.locator(".landing-cubes").isVisible(), false);
+    const theme = page.getByRole("switch", { name: "Dark mode" });
+    await theme.press("Space");
+    assert.equal(await theme.getAttribute("aria-checked"), "true");
+    assert.equal(await page.locator("html").getAttribute("data-theme"), "dark");
+    await page.reload();
+    assert.equal(await theme.getAttribute("aria-checked"), "true");
     await page.emulateMedia({ forcedColors: "none" });
+    await scan(page);
 
     const help = page.getByRole("button", { name: "Keyboard help", exact: true });
     await help.click();

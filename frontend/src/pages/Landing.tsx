@@ -1,5 +1,4 @@
-import { CubeBackdrop } from "../components/CubeBackdrop";
-import { useState } from "react";
+import { useLayoutEffect, useState } from "react";
 import { ButtonLink } from "../components/Button";
 import { Icon } from "../components/Icon";
 
@@ -71,23 +70,33 @@ function RevealWords({ text }: { text: string }) {
 }
 
 export function Landing() {
+  useLayoutEffect(() => {
+    const sectionId = window.location.hash.slice(1);
+    if (["engine", "checks", "reader"].includes(sectionId)) {
+      // Cross-page fragment navigation can happen before React mounts the section.
+      const section = document.getElementById(sectionId);
+      section?.focus({ preventScroll: true });
+      section?.scrollIntoView();
+    }
+  }, []);
+
   return <main id="main" className="landing" tabIndex={-1}>
     <section className="landing-hero" id="top" aria-labelledby="hero-heading">
-      <CubeBackdrop className="landing-cubes" />
       <div className="landing-wrap">
         <p className="landing-eyebrow">Accessibility-first EdTech</p>
         <h1 id="hero-heading">
-          {["Learning", "that fits", "every reader."].map((line) =>
-            <span className="landing-hero-line" key={line}><span>{line} </span></span>)}
+          <span className="landing-hero-line">Learning</span>{" "}
+          <span className="landing-hero-line">that fits</span>{" "}
+          <span className="landing-hero-line">every reader.</span>
         </h1>
         <p className="landing-hero-description">Audit and repair educational Word documents, then share them in a reading space that students can adjust to suit them.</p>
-        <div className="landing-actions">
+        <div className="product-actions">
           <ButtonLink href="#engine">See how it works</ButtonLink>
-          <ButtonLink href="#reader" variant="secondary">Try the reader</ButtonLink>
+          <ButtonLink variant="secondary" href="#reader">Try the reader</ButtonLink>
         </div>
       </div>
     </section>
-    <section className="landing-alt" id="engine" aria-labelledby="engine-heading">
+    <section className="landing-alt" id="engine" aria-labelledby="engine-heading" tabIndex={-1}>
       <div className="landing-wrap">
         <p className="landing-eyebrow">Document engine</p>
         <h2 id="engine-heading"><RevealWords text="From upload to verified, in four moves." /></h2>
@@ -99,7 +108,7 @@ export function Landing() {
         </ol>
       </div>
     </section>
-    <section id="checks" aria-labelledby="checks-heading">
+    <section id="checks" aria-labelledby="checks-heading" tabIndex={-1}>
       <div className="landing-wrap">
         <p className="landing-eyebrow">What we check</p>
         <h2 id="checks-heading"><RevealWords text="Five places barriers hide." /></h2>
@@ -116,7 +125,7 @@ export function Landing() {
         </ul>
       </div>
     </section>
-    <section className="landing-alt" id="reader" aria-labelledby="reader-heading">
+    <section className="landing-alt" id="reader" aria-labelledby="reader-heading" tabIndex={-1}>
       <div className="landing-wrap">
         <p className="landing-eyebrow">Learner experience</p>
         <h2 id="reader-heading"><RevealWords text="Make the page fit the student." /></h2>

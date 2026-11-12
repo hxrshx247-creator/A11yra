@@ -3,11 +3,13 @@ import { StatusBadge } from "./StatusBadge";
 import { ButtonLink } from "./Button";
 import { Icon } from "./Icon";
 
-export function FindingCard({ finding, documentId }: { finding: Finding; documentId?: string }) {
-
+export function FindingCard({ finding, documentId, headingLevel = "h2" }: {
+  finding: Finding; documentId?: string; headingLevel?: "h2" | "h3";
+}) {
+  const Heading = headingLevel;
   return (
     <article className="finding-card">
-      {documentId ? <h3>{finding.location}</h3> : <h2>{finding.location}</h2>}
+      <Heading>{finding.location}</Heading>
       <div className="finding-badges">
         <StatusBadge status={finding.status} />
         <StatusBadge status={finding.severity} />

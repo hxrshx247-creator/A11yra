@@ -10,8 +10,8 @@ import { register } from "./product-helpers.mjs";
 const site = process.env.A11YRA_TEACHER_URL;
 const screenshots = process.env.A11YRA_PUBLIC_SCREENSHOTS;
 const baseline = process.env.A11YRA_SCREENSHOT_BASELINE === "1";
-const navLabels = ["Product", "Pricing", "Sign in", "Try the sample document"];
-const footerLabels = ["Security & privacy", "Privacy policy", "Terms", "Accessibility", "Support", "Changelog", "Status"];
+const navLabels = ["Engine", "Checks", "Reader", "Workspace"];
+const footerLabels = ["Pricing", "Security & privacy", "Accessibility", "Privacy policy", "Terms", "Support", "Changelog", "Status"];
 const pages = {
   product: "/", pricing: "/pricing", security: "/security", privacy: "/privacy",
   terms: "/terms", accessibility: "/accessibility", support: "/support", changelog: "/changelog",
@@ -80,10 +80,15 @@ test("sample signup opens one audit with the next step", { timeout: 60_000, skip
       await register(page, site);
       await page.getByRole("button", { name: "Audit the sample syllabus" }).click();
     } else {
-      await page.goto(site);
+      await page.goto(new URL("/account/login", site).href);
       const nav = page.getByRole("navigation", { name: "Main", exact: true });
       assert.deepEqual(await nav.getByRole("link").allTextContents(), navLabels);
-      await nav.getByRole("link", { name: "Try the sample document" }).press("Enter");
+      await nav.getByRole("link", { name: "Reader", exact: true }).press("Enter");
+      await page.waitForURL("**/#reader");
+      await page.waitForFunction(() => document.activeElement?.id === "reader");
+      await page.getByRole("main").getByRole("link", { name: "Sign in", exact: true }).press("Enter");
+      await page.waitForURL("**/account/login?next=%2Fworkspace");
+      await page.goto(new URL("/account/signup?sample=1", site).href);
       await page.getByLabel("Email address (required)").fill(`sample-${randomUUID()}@example.test`);
       await page.getByLabel("Password (required)").fill("a test password 123");
       await page.getByRole("button", { name: "Create an account" }).press("Enter");

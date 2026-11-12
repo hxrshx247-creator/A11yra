@@ -7,7 +7,7 @@ main > h1 { margin-bottom: 1.2rem; }
 .site-nav, .site-footer { justify-content: space-between; gap: .5rem 1.5rem; }
 .site-nav { min-block-size: 4.5rem; padding-block: .35rem; }
 .header-actions { gap: .4rem 1rem; }
-.wordmark { display: inline-flex; align-items: center; gap: .5rem; min-block-size: var(--target); font: 400 1.65rem/1 Georgia, "Times New Roman", serif; text-decoration: none; }
+.wordmark { display: inline-flex; align-items: center; gap: .5rem; min-block-size: var(--target); font: 400 1.65rem/1 var(--font-heading); text-decoration: none; }
 .theme-control { display: inline-flex; align-items: center; gap: .45rem; }
 .theme-select {
   min-block-size: var(--target);
@@ -19,9 +19,14 @@ main > h1 { margin-bottom: 1.2rem; }
 }
 .nav-upload { display: inline-flex; align-items: center; min-block-size: var(--target); color: var(--ink-muted); text-decoration: none; }
 .nav-upload:hover, .nav-upload:focus-visible { text-decoration: underline; }
-.site-footer { border-top: 1px solid var(--line); padding-block: 1rem 1.4rem; }
+.site-footer {
+  width: min(100%, 83rem);
+  border-top: 1px solid var(--line);
+  padding-block: 1rem 1.4rem;
+}
 .footer-name { font: 550 1.15rem/1.2 var(--font-heading); color: var(--steel-deep); }
 .site-footer > div { display: flex; flex-wrap: wrap; gap: .25rem; }
+.site-footer :is(.product-footer-links, .button--quiet) { font-size: .875rem; }
 .stepper { border-top: 1px solid var(--line); padding-block: .35rem; }
 .stepper-wide { display: none; }
 .stepper-compact > summary { min-block-size: var(--target); padding-block: .5rem; color: var(--steel-deep); font-weight: 700; }
@@ -50,6 +55,12 @@ main > h1 { margin-bottom: 1.2rem; }
 .button--quiet { border-color: transparent; padding-inline: .65rem; }
 .button--secondary:hover, .button--quiet:hover { color: var(--steel-deep); background: var(--wash); border-color: var(--line-strong); }
 .button[aria-disabled="true"] { cursor: wait; }
+.button:disabled {
+  cursor: default;
+  color: var(--ink-muted);
+  background: var(--wash);
+  border-color: var(--line-strong);
+}
 [data-motion="full"] :is(.button, .button-link):active { transform: translateY(1px); }
 
 .app-dialog {
@@ -79,13 +90,28 @@ main > h1 { margin-bottom: 1.2rem; }
 .upload-page { max-inline-size: 45rem; }
 .upload-page > p { color: var(--ink-muted); }
 .upload-form, .repair-form { display: grid; grid-template-columns: minmax(0, 1fr); gap: .9rem; justify-items: start; }
+.upload-form {
+  padding: clamp(.85rem, 3.5vw, 1.5rem);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+}
 .upload-form .drop-zone { width: 100%; }
 .drop-zone {
   background: var(--wash); border: 2px dashed var(--line-strong); border-radius: var(--radius);
   padding: clamp(1rem, 4vw, 1.7rem); color: var(--steel-deep);
 }
 .drop-zone[data-dragging="true"] { background: var(--mist); border-color: var(--steel-deep); border-style: solid; }
-.drop-zone > .icon { display: block; font-size: 1.5rem; margin-bottom: .6rem; }
+.drop-zone > .icon {
+  display: block;
+  box-sizing: content-box;
+  padding: .55rem;
+  border-radius: .75rem;
+  background: var(--mist);
+  font-size: 1.35rem;
+  margin-block-end: .6rem;
+}
 .drop-zone p { margin-block: .25rem .65rem; }
 .drop-zone input { inline-size: 100%; max-inline-size: 100%; min-block-size: var(--target); }
 .drop-zone input::file-selector-button {
@@ -94,15 +120,21 @@ main > h1 { margin-bottom: 1.2rem; }
   border: 1px solid var(--line-strong); border-radius: var(--radius);
 }
 .upload-form .retention { margin: 0; color: var(--ink-muted); font-size: var(--small); }
-.upload-feedback { min-block-size: 3.4rem; inline-size: 100%; }
+.upload-feedback { inline-size: 100%; }
+.upload-feedback .status:empty { min-block-size: 0; }
 .upload-feedback p { margin-block: .2rem; }
 .upload-track { block-size: .35rem; background: var(--mist); overflow: hidden; border-radius: 99px; }
 .upload-track::before { content: ""; display: block; inline-size: 35%; block-size: 100%; background: var(--steel); }
 [data-motion="full"] .upload-track::before { animation: upload-travel 1.5s var(--ease-in-out) infinite alternate; }
 @keyframes upload-travel { from { transform: translateX(0); } to { transform: translateX(185%); } }
 .form-error { color: var(--status-error-ink); background: var(--status-error-fill); border-inline-start: 3px solid currentColor; padding: .55rem .75rem; }
-.form-error .icon, .success-message .icon { margin-inline-end: .35rem; }
-.success-message { color: var(--status-success-ink); }
+.form-error .icon, .workflow-success .icon { margin-inline-end: .35rem; }
+.workflow-success {
+  border-inline-start: 3px solid currentColor;
+  padding: .55rem .75rem;
+  color: var(--status-success-ink);
+  background: var(--status-success-fill);
+}
 
 .fix-layout, .compare-grid { display: grid; gap: 1.35rem; grid-template-columns: minmax(0, 1fr); align-items: start; }
 .fix-layout { margin-top: 1rem; }
@@ -118,12 +150,19 @@ main > h1 { margin-bottom: 1.2rem; }
 .choice input { inline-size: 1.15rem; block-size: 1.15rem; flex: none; accent-color: var(--steel-deep); }
 legend { padding-inline: .25rem; }
 .comparison { display: grid; gap: 1.45rem; margin-block: 1rem; }
+.comparison-heading { padding-block-end: .5rem; border-block-end: 1px solid var(--line); }
 .compare-grid { gap: .75rem 1.5rem; margin-top: .75rem; }
 .compare-card, .workflow-card, .repair-form, .finding-card {
   padding: clamp(1rem, 3vw, 1.6rem);
   border: 1px solid var(--line);
   border-radius: var(--radius);
   background: var(--surface);
+  box-shadow: var(--shadow-sm);
+}
+.repair-form, .compare-card--latest { background: var(--wash); }
+.repair-form #repair-help, .progress-delta { color: var(--ink-muted); }
+.workflow-card h2, .repair-form h2, .compare-card h3, .fix-layout .finding-card h2 {
+  font: 500 var(--h3) / 1.25 var(--font-heading);
 }
 .compare-card .audit-percent { margin: .55rem 0 0; }
 .compare-card p:last-child { margin-bottom: 0; }
@@ -154,7 +193,7 @@ legend { padding-inline: .25rem; }
   border-radius: inherit;
   mask-image: linear-gradient(100deg, transparent 32%, black 100%);
 }
-.page-heading h1 { font-size: clamp(2.35rem, 5vw, 4rem); }
+.page-heading h1 { font: 400 clamp(2.35rem, 5vw, 4rem) / 1.2 var(--font-heading); }
 .page-heading .page-eyebrow {
   margin: 0 0 .85rem;
   color: var(--steel-deep);
@@ -164,7 +203,17 @@ legend { padding-inline: .25rem; }
   text-transform: uppercase;
 }
 .page-heading .product-description { margin: .75rem 0 0; }
+:is(.workspace-page, .audit-page, .upload-page, .history-page, .account-page) .page-heading {
+  padding: clamp(1.1rem, 3.5vw, 2.4rem);
+}
+:is(.workspace-page, .audit-page, .upload-page, .history-page, .account-page) .page-heading h1 {
+  font-size: clamp(1.9rem, 4vw, 3.25rem);
+}
+:is(.workspace-page, .audit-page, .upload-page, .history-page, .account-page) .page-eyebrow { margin-block-end: .4rem; }
 .export-grid { display: grid; gap: 1rem; margin-block-end: 1rem; }
+.export-grid .workflow-card { display: flex; flex-direction: column; align-items: flex-start; }
+.export-grid .workflow-card > .button { margin-block-start: auto; }
+.export-grid .export-options { inline-size: 100%; }
 .export-formats { background: var(--wash); }
 @media (min-width: 48em) {
   .export-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -172,7 +221,7 @@ legend { padding-inline: .25rem; }
 @media (prefers-contrast: more), (forced-colors: active) {
   .page-heading-backdrop { display: none; }
 }
-.complete-state { position: relative; overflow: hidden; padding: 1rem 0 1rem 0; }
+.complete-state { padding-block: .5rem; }
 @media (min-width: 40em) { .compare-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (min-width: 58em) { .fix-layout { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 2.5rem; } }
 
@@ -196,4 +245,5 @@ legend { padding-inline: .25rem; }
   [aria-current="step"] .step-marker { forced-color-adjust: none; color: HighlightText; background: Highlight; }
 }
 .export-options { display: grid; gap: .9rem; }
+.export-options > div + div { border-block-start: 1px solid var(--line); padding-block-start: .9rem; }
 .export-options p { margin: .4rem 0 0; color: var(--ink-muted); }

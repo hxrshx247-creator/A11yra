@@ -1,9 +1,11 @@
 import type { Audit, ReauditResponse } from "../types/contract";
 import { StatusBadge } from "./StatusBadge";
 
-function ProgressSummary({ title, progress }: { title: string; progress: Audit["progress"] }) {
+function ProgressSummary({ title, progress, latest = false }: {
+  title: string; progress: Audit["progress"]; latest?: boolean;
+}) {
   return (
-    <div className="compare-card">
+    <div className={latest ? "compare-card compare-card--latest" : "compare-card"}>
       <h3>{title}</h3>
       {progress.percent === null ? <p>No checks were evaluated.</p> : (
         <>
@@ -35,7 +37,7 @@ export function BeforeAfterPanel({ result }: { result: ReauditResponse }) {
           : `${change > 0 ? "+" : "−"}${Math.abs(change)} ${Math.abs(change) === 1 ? "check" : "checks"} passed`}</p>
         <div className="compare-grid">
           <ProgressSummary title="Before re-audit" progress={diff.progress_before} />
-          <ProgressSummary title="After re-audit" progress={diff.progress_after} />
+          <ProgressSummary title="After re-audit" progress={diff.progress_after} latest />
         </div>
       </section>
       <section aria-labelledby="compare-changes">

@@ -1,6 +1,6 @@
 import { useRef } from "react";
 import type { ReactNode } from "react";
-import { Button, ButtonLink } from "./Button";
+import { Button } from "./Button";
 import { Dialog } from "./Dialog";
 import { LandingControls } from "./LandingControls";
 import { Icon } from "./Icon";
@@ -20,20 +20,20 @@ export function AppShell({ landing, publicPage, step, children }: {
 
   return <>
     <a className="skip-link" href="#main">Skip to main content</a>
-    <header className={landing ? "site-header site-header--landing" : "site-header"}>
+    <header className={publicPage ? "site-header site-header--public" : "site-header"}>
       {publicPage ? <div className="site-nav">
         {brand}
         <nav className="public-nav" aria-label="Main">
-          <a href="/" aria-current={landing ? "page" : undefined}>Product</a>
-          <a href="/pricing" aria-current={path === "/pricing" ? "page" : undefined}>Pricing</a>
-          <a href="/account/login" aria-current={path === "/account/login" ? "page" : undefined}>Sign in</a>
-          <ButtonLink href="/account/signup?sample=1">Try the sample document</ButtonLink>
+          <a href={landing ? "#engine" : "/#engine"}>Engine</a>
+          <a href={landing ? "#checks" : "/#checks"}>Checks</a>
+          <a href={landing ? "#reader" : "/#reader"}>Reader</a>
+          <a href="/workspace">Workspace</a>
         </nav>
+        <LandingControls />
       </div> : <nav className="site-nav" aria-label="Main">
         {brand}
         <div className="header-actions">
-          <a className="nav-upload" href="/workspace">Workspace</a>
-          <a className="nav-upload" href="/pricing">Pricing</a>
+          <a className="nav-upload" href="/workspace" aria-current={path === "/workspace" ? "page" : undefined}>Workspace</a>
           {step && step !== "Upload" && <a className="nav-upload" href="/upload">Upload another document</a>}
           <ThemeToggle />
           <Button variant="secondary" onClick={openSettings}><Icon name="settings" /> Settings</Button>
@@ -45,17 +45,16 @@ export function AppShell({ landing, publicPage, step, children }: {
     <footer className="site-footer">
       <span className="footer-name">A11yra</span>
       <nav className="product-footer-links" aria-label="About A11yra">
+        <a href="/pricing" aria-current={path === "/pricing" ? "page" : undefined}>Pricing</a>
         <a href="/security">Security &amp; privacy</a>
-        {!publicPage && <a href="/accessibility">Accessibility</a>}
+        <a href="/accessibility">Accessibility</a>
         <a href="/privacy">Privacy policy</a>
         <a href="/terms">Terms</a>
-        {publicPage && <a href="/accessibility">Accessibility</a>}
         <a href="/support">Support</a>
         <a href="/changelog">Changelog</a>
         <a href="/status">Status</a>
       </nav>
       <div>
-        {landing ? <LandingControls /> : publicPage && <ThemeToggle />}
         <Button variant="quiet" onClick={() => help.current?.showModal()}>Keyboard help</Button>
         <Button variant="quiet" onClick={openSettings}>Settings</Button>
       </div>

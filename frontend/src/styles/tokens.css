@@ -32,6 +32,7 @@
   --shell: 74rem;
   --target: 2.75rem;
   --radius: 1.125rem;
+  --shadow-sm: 0 1px 2px #0f1e2b0f, 0 6px 18px #0f1e2b14;
   --motion-fast: 120ms;
   --motion-base: 200ms;
   --motion-slow: 320ms;
@@ -72,18 +73,19 @@
 
 :root[data-theme="dark"] {
   color-scheme: dark;
-  --surface: #132a3d;
-  --cube: rgba(143,179,207,.20);
-  --focus-ring: #caddeb;
-  --paper: #0b1722;
-  --wash: #102334;
-  --mist: #19354d;
-  --ink: #e8f0f6;
-  --ink-muted: #a9bdcc;
-  --steel: #8fb3cf;
-  --steel-deep: #caddeb;
-  --line: #5f819e;
-  --line-strong: #8fb3cf;
+  --shadow-sm: 0 1px 2px #0005, 0 8px 24px #0005;
+  --surface: #202d41;
+  --cube: rgba(159,194,231,.15);
+  --focus-ring: #c5dfff;
+  --paper: #111926;
+  --wash: #182336;
+  --mist: #293e57;
+  --ink: #f0f4fb;
+  --ink-muted: #b9c8dc;
+  --steel: #a4c9ef;
+  --steel-deep: #d4e6fb;
+  --line: #647e9d;
+  --line-strong: #94afcf;
   --status-success-ink: #6fd39a;
   --status-success-fill: #143425;
   --status-warning-ink: #f0c060;

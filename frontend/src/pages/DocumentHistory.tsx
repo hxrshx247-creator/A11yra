@@ -2,6 +2,7 @@ import { useState } from "react";
 import type { FormEvent } from "react";
 import { deleteDocument, productRequest } from "../api/client";
 import { Button, ButtonLink } from "../components/Button";
+import { Icon } from "../components/Icon";
 import { ProductPage, ProductStatus } from "../components/ProductPage";
 import { errorMessage, formatDate, useProduct, useWorkspace } from "../hooks/useProduct";
 import type { History, Share, Usage } from "../types/product";
@@ -28,10 +29,12 @@ export function DocumentHistory({ id }: { id: string }) {
     }
   }
 
-  return <ProductPage title="Audit history" description={data?.filename}>
+  return <ProductPage title="Audit history" description={data?.filename} className="history-page">
     <ProductStatus error={error} message={data ? undefined : "Loading audit history…"} />
     {data && <>
-      {active && <ButtonLink href={`/audit/${id}`}>Open latest audit</ButtonLink>}
+      {active && <div className="product-actions">
+        <ButtonLink href={`/audit/${id}`}>Open latest audit <Icon name="arrow" /></ButtonLink>
+      </div>}
       {first && last && <section className="product-card">
         <h2>Audit progress</h2>
         <p>{first.passed} of {first.evaluated} → {last.passed} of {last.evaluated} checks passed</p>

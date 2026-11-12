@@ -10,8 +10,10 @@ export function LandingControls() {
       <option value="full">Motion: on</option>
       <option value="off">Motion: off</option>
     </select>
-    <Button variant="secondary" onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}>
-      {resolvedTheme === "dark" ? "Light mode" : "Dark mode"}
+    <Button variant="secondary" className="theme-switch" role="switch" aria-label="Dark mode" aria-checked={resolvedTheme === "dark"}
+      onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}>
+      <span aria-hidden="true">☀</span>
+      <span aria-hidden="true">☾</span>
     </Button>
   </div>;
 }

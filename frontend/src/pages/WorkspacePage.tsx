@@ -2,6 +2,7 @@ import { useState } from "react";
 import type { FormEvent } from "react";
 import { downloadProductFile, productRequest, selectWorkspace, uploadSample } from "../api/client";
 import { Button, ButtonLink } from "../components/Button";
+import { Icon } from "../components/Icon";
 import { ProductPage, ProductStatus } from "../components/ProductPage";
 import { errorMessage, formatDate, useProduct, useWorkspace } from "../hooks/useProduct";
 import type { Activity, Dashboard, IntegrationKey, Member, Usage, WorkspaceDocument } from "../types/product";
@@ -37,7 +38,7 @@ export function WorkspacePage({ section }: { section: WorkspaceSection }) {
   const editor = workspace.role !== "viewer";
   const allowed = (item: WorkspaceSection) => item === "documents" || (item === "activity" ? editor : owner);
   return <ProductPage title={sections[section]} eyebrow={workspace.name} className="workspace-page">
-    <div className="product-toolbar">
+    <div className="product-toolbar workspace-toolbar">
       {profile.workspaces.length > 1 && <label>Switch workspace
         <select value={workspace.id} onChange={(event) => {
           selectWorkspace(event.target.value);
@@ -48,7 +49,7 @@ export function WorkspacePage({ section }: { section: WorkspaceSection }) {
           </option>)}
         </select>
       </label>}
-      <span className="product-role">Role {workspace.role}</span>
+      <span className="product-role">{workspace.role}</span>
       <a href="/account/settings">Account and data</a>
     </div>
     <nav aria-label="Workspace" className="product-tabs">
@@ -69,12 +70,14 @@ function Documents({ base, editor }: { base: string; editor: boolean }) {
   const { data: usage } = useProduct<Usage>(`${base}/usage`);
   const action = useAction();
   return <>
-    <div className="product-actions">
-      {editor && <ButtonLink href="/upload">Upload a Word document</ButtonLink>}
-      <a href="/checks">What A11yra checks</a>
+    <div className="workspace-document-toolbar">
+      <div className="product-actions">
+        {editor && <ButtonLink href="/upload"><Icon name="upload" /> Upload a Word document</ButtonLink>}
+        <a href="/checks">What A11yra checks</a>
+      </div>
+      {usage && <p className="workspace-usage">You’ve used <strong>{usage.documents_used} of {usage.plan.documents_per_month}</strong> documents this month.
+        {" "}<a href="/pricing">See plans</a></p>}
     </div>
-    {usage && <p>You’ve used <strong>{usage.documents_used} of {usage.plan.documents_per_month}</strong> documents this month.
-      {" "}<a href="/pricing">See plans</a></p>}
     {docs.data?.length === 0 && editor && <section className="product-card sample-card">
       <h2>Try the workflow with a sample</h2>
       <ol><li>Audit the sample syllabus.</li><li>Fix an issue and run a new audit to verify it.</li><li>Export the learner reader or publish a link.</li></ol>
@@ -85,13 +88,16 @@ function Documents({ base, editor }: { base: string; editor: boolean }) {
       <ProductStatus {...action} />
     </section>}
     <ProductStatus error={docs.error} message={docs.data ? undefined : "Loading documents…"} />
-    {docs.data?.length === 0 && !editor && <p>No documents have been added to this workspace yet.</p>}
-    {!!docs.data?.length && <ul className="product-list" aria-label="Workspace documents">{docs.data.map((doc) =>
-      <li className="product-card" key={doc.id}>
-        <h2>{doc.filename}</h2>
+    {docs.data?.length === 0 && !editor && <div className="product-card">
+      <p>No documents have been added to this workspace yet.</p>
+    </div>}
+    {!!docs.data?.length && <ul className="product-list workspace-documents" role="list" aria-label="Workspace documents">{docs.data.map((doc) =>
+      <li className="product-card workspace-document" key={doc.id}>
+        <h2><Icon name="document" /> {doc.filename}</h2>
         <p>{doc.status === "active" ? `Files expire ${formatDate(doc.expires_at)}` : "Working files expired. Audit history is available."}</p>
         <div className="product-actions">
-          {doc.status === "active" && <a href={`/audit/${doc.id}`} aria-label={`Open audit for ${doc.filename}`}>Open audit</a>}
+          {doc.status === "active" && <ButtonLink variant="secondary" href={`/audit/${doc.id}`}
+            aria-label={`Open audit for ${doc.filename}`}>Open audit <Icon name="arrow" /></ButtonLink>}
           <a href={`/history/${doc.id}`} aria-label={`View history for ${doc.filename}`}>View history</a>
         </div>
       </li>)}</ul>}

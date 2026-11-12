@@ -75,11 +75,11 @@ export function CheckList({ audit, canEdit }: { audit: Audit; canEdit: boolean }
               <h2>{check.label} findings</h2>
               <p className="check-summary">{check.summary}</p>
               {check.finding_ids.length ? (
-                <ul className="findings-list">
+                <ul className="findings-list" role="list">
                   {findings.filter((finding) => check.finding_ids.includes(finding.id)).map(
                     (finding) => (
                       <li key={finding.id}>
-                        <FindingCard finding={finding} documentId={canEdit ? audit.document_id : undefined} />
+                        <FindingCard finding={finding} headingLevel="h3" documentId={canEdit ? audit.document_id : undefined} />
                       </li>
                     ),
                   )}

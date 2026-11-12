@@ -5,7 +5,7 @@ main, input, textarea, fieldset { min-inline-size: 0; }
 main { overflow-wrap: anywhere; }
 h1, h2, h3 {
   margin: 0;
-  font-family: Georgia, "Times New Roman", serif;
+  font-family: var(--font-heading);
   font-weight: 400;
   font-optical-sizing: auto;
   line-height: 1.2;

@@ -8,6 +8,7 @@ const PATHS = {
   waiting: <><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></>,
   info: <><circle cx="12" cy="12" r="9" /><path d="M12 11v6m0-10v.1" /></>,
   upload: <><path d="M12 16V3m-4 4 4-4 4 4M4 15v5h16v-5" /></>,
+  document: <><path d="M6 3h8l4 4v14H6zM14 3v5h4M9 12h6m-6 4h6" /></>,
   settings: <><path d="M4 6h16M4 12h16M4 18h16" /><path d="M9 3v6m6 0v6m-6 0v6" strokeWidth="3" /></>,
   arrow: <path d="M4 12h15m-6-6 6 6-6 6" />,
 };

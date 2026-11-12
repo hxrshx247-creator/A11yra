@@ -11,6 +11,8 @@
   --line-strong: #667a8d;
   --accent: #263e51;
   --selected: #edf3f7;
+  --radius: 1.125rem;
+  --page-shadow: 0 1px 2px #1b28330f, 0 6px 18px #1b283314;
   --font-heading: Georgia, "Times New Roman", serif;
   --font-body: system-ui, sans-serif;
   --motion-fast: 120ms;
@@ -37,6 +39,7 @@
   --line-strong: #8fb3cf;
   --accent: #b9d4ea;
   --selected: #263e51;
+  --page-shadow: 0 1px 2px #0005, 0 8px 24px #0005;
 }
 :root[data-theme="contrast"] {
   color-scheme: dark;
@@ -48,6 +51,7 @@
   --accent: #fff580;
   --line-strong: #fff;
   --selected: #302d0c;
+  --page-shadow: none;
 }
 :root[data-motion="off"] { --motion-fast: 0ms; --motion-base: 0ms; --motion-slow: 0ms; }
 [data-motion="off"] *, [data-motion="off"] *::before, [data-motion="off"] *::after {
@@ -103,7 +107,7 @@ button, select { font: inherit; }
   flex-wrap: wrap;
   gap: .4rem 1rem;
 }
-.reader-title { position: relative; padding-inline-start: 2.75rem; overflow: hidden; }
+.reader-title { position: relative; padding-inline-start: 2.75rem; min-inline-size: 0; }
 .reader-mark { position: absolute; inset: 0 auto auto 0; inline-size: 2rem; block-size: 2rem; pointer-events: none; }
 .mark-top { fill: var(--mist); }
 .mark-left { fill: var(--sky); }
@@ -119,7 +123,12 @@ button, select { font: inherit; }
   display: inline-flex;
   align-items: center;
   min-block-size: 2.75rem;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  padding-inline: .8rem;
+  font-weight: 650;
 }
+.header-inner a:hover { background: var(--selected); }
 
 .reader-layout {
   display: grid;
@@ -132,10 +141,14 @@ button, select { font: inherit; }
 }
 .contents, main, aside {
   min-width: 0;
-  border-top: 1px solid var(--line);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
   overflow-wrap: anywhere;
 }
-.contents, aside { padding: .8rem .25rem; }
+.contents, aside {
+  padding: clamp(.7rem, 2vw, 1rem);
+  background: var(--selected);
+}
 .contents summary {
   display: list-item;
   padding: .65rem .3rem;
@@ -165,7 +178,12 @@ button, select { font: inherit; }
   font-weight: 750;
 }
 
-main { position: relative; padding: clamp(1rem, 4vw, 2.25rem); background: var(--surface); }
+main {
+  position: relative;
+  padding: clamp(1rem, 4vw, 2.25rem);
+  background: var(--surface);
+  box-shadow: var(--page-shadow);
+}
 #reading-ruler {
   position: absolute;
   inset-inline: 0;
@@ -285,7 +303,7 @@ article .is-reading {
   :root { color-scheme: light; color: #000; background: #fff; }
   .reader-header, .contents, aside, .skip-link { display: none; }
   .reader-layout { display: block; padding: 0; }
-  main { color: #000; background: #fff; border: 0; padding: 0; }
+  main { color: #000; background: #fff; border: 0; padding: 0; box-shadow: none; }
   article { max-width: none; }
   a { color: #000; }
   th { background: #fff; }

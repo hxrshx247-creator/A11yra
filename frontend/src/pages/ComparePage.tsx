@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { runReaudit } from "../api/client";
 import { BeforeAfterPanel } from "../components/BeforeAfterPanel";
 import { Button, ButtonLink } from "../components/Button";
+import { Icon } from "../components/Icon";
 import { useAudit } from "../hooks/useAudit";
 import { usePageHeading } from "../hooks/usePageHeading";
 import { useWorkspace } from "../hooks/useProduct";
@@ -43,13 +44,14 @@ export function ComparePage({ documentId }: { documentId: string }) {
           </>}
         </div>
       )}
-      <p role="status" className={result ? "visually-hidden" : "page-status"}>
+      <p role="status" className={result ? "visually-hidden" : loadError || error ? "page-status form-error" : "page-status"}>
+        {(loadError || error) && <Icon name="error" />}
         {loadError || error || (pending ? "Running re-audit…" : result ? "Re-audit complete." : !audit ? "Loading audit…" : "")}
       </p>
       {loadError && <a className="action-link" href="/upload">Return to upload</a>}
       {result && (
         <div className="comparison">
-          <h2 ref={resultsHeading} tabIndex={-1}>Re-audit results</h2>
+          <h2 className="comparison-heading" ref={resultsHeading} tabIndex={-1}>Re-audit results</h2>
           <BeforeAfterPanel result={result} />
           <div><ButtonLink href={`/export/${documentId}`}>Continue to export</ButtonLink></div>
         </div>

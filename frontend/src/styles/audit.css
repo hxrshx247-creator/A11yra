@@ -1,16 +1,27 @@
+.audit-overview {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1rem;
+  margin-block-end: clamp(1.5rem, 4vw, 2.5rem);
+}
+.audit-progress, .audit-actions {
+  padding: clamp(1rem, 3vw, 1.45rem);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+}
 .audit-progress {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
   gap: .75rem 1.25rem;
-  padding: clamp(1rem, 3vw, 1.6rem);
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  background: var(--surface);
+  background: var(--wash);
   color: var(--steel-deep);
-  margin-block: .5rem 1rem;
 }
-.audit-progress h2 { font-size: var(--h3); }
+.audit-page h2 { font-family: var(--font-heading); }
+.audit-progress h2, .audit-actions h2 { font-size: var(--h3); }
+.audit-actions { background: var(--surface); }
+.audit-actions h2 { margin-block-end: .65rem; }
 .audit-progress p { margin: .2rem 0 0; color: var(--ink-muted); }
 .audit-percent {
   font-family: var(--font-body);
@@ -36,26 +47,34 @@
 .audit-progress progress::-moz-progress-bar { background: var(--steel); border-radius: 99px; }
 [data-motion="full"] .audit-progress progress::-webkit-progress-value { animation: show-progress var(--motion-slow) var(--ease-out) both; }
 @keyframes show-progress { from { transform: scaleX(0); } to { transform: scaleX(1); } }
-.audit-action { margin-bottom: 2rem; }
 .audit-grid { display: grid; grid-template-columns: minmax(0, 1fr); align-items: start; gap: 1.6rem; }
+.check-column {
+  padding: clamp(.8rem, 3vw, 1.3rem);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--wash);
+}
 .check-column > h2 { margin-bottom: .75rem; }
 .check-list { display: grid; gap: .5rem; }
 .check-card {
   position: relative;
   display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: .35rem .7rem;
   padding: .7rem .75rem; inline-size: 100%; min-block-size: var(--target); text-align: start;
-  border: 1px solid var(--line); border-radius: .875rem; color: var(--ink); background: var(--surface);
-  transition: background-color var(--motion-fast);
+  border: 1px solid var(--line); border-inline-start-width: 4px;
+  border-radius: .875rem; color: var(--ink); background: var(--surface);
+  transition: background-color var(--motion-fast), border-color var(--motion-fast);
 }
 .check-card:focus-visible { z-index: 1; }
-.check-card:hover { background: var(--wash); }
-.check-card[aria-selected="true"] { background: var(--mist); border-color: var(--steel-deep); }
+.check-card:hover { border-color: var(--steel-deep); }
+.check-card[aria-selected="true"] { background: var(--mist); border-color: var(--steel); }
 .check-card[aria-selected="true"] .check-label { font-weight: 800; }
 .findings-panel { min-inline-size: 0; }
 [data-motion="full"] .findings-panel:not([hidden]) { animation: panel-appear var(--motion-base) var(--ease-out) both; }
 @keyframes panel-appear { from { opacity: .97; } to { opacity: 1; } }
 .check-summary { margin: .55rem 0 1rem; color: var(--ink-muted); }
 .findings-list { display: grid; gap: 1rem; padding: 0; margin: 0; list-style: none; }
+.findings-panel .finding-card { box-shadow: var(--shadow-sm); }
+.findings-panel .finding-card h3 { font-family: var(--font-heading); }
 .finding-badges { display: flex; flex-wrap: wrap; align-items: center; gap: .4rem .55rem; margin-block: .7rem 1rem; }
 .badge {
   display: inline-flex; gap: .35rem; align-items: center; max-inline-size: 100%;
@@ -80,7 +99,8 @@
 .empty-findings p { margin: 0; position: relative; font-weight: 700; }
 .empty-findings .icon { color: var(--status-success-ink); }
 @media (min-width: 58em) {
-  .audit-grid { grid-template-columns: minmax(19rem, .95fr) minmax(0, 1.75fr); gap: 2.6rem; }
+  .audit-overview { grid-template-columns: minmax(0, 1fr) minmax(0, 1.55fr); }
+  .audit-grid { grid-template-columns: minmax(19rem, .95fr) minmax(0, 1.75fr); gap: 2rem; }
 }
 @media (forced-colors: active) {
   .badge { border-color: ButtonText; }

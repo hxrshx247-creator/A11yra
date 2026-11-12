@@ -84,7 +84,7 @@ export function Upload() {
   return <main id="main" className="upload-page" tabIndex={-1}>
     <PageHeading headingRef={heading} title="Upload a Word document" eyebrow="Document engine"
       description="Start with the handout, notes, or syllabus you want students to read." />
-    {usage && <p>You’ve used {usage.documents_used} of {usage.plan.documents_per_month} documents this month. <a href="/pricing">See plans</a></p>}
+    {usage && <p className="workspace-usage">You’ve used <strong>{usage.documents_used} of {usage.plan.documents_per_month}</strong> documents this month. <a href="/pricing">See plans</a></p>}
     {workspace.role === "viewer" ? <p>Your workspace role allows you to view audits. <a href="/workspace">Back to workspace</a></p> :
     <form className="upload-form" onSubmit={handleSubmit}>
       <div className="drop-zone" data-dragging={dragging} onDrop={onDrop}
@@ -108,8 +108,10 @@ export function Upload() {
         </p>
         {pending && <div className="upload-track" aria-hidden="true" />}
       </div>
-      <Button type="submit" aria-disabled={pending || Boolean(validate(file))}>Upload document</Button>
-      <Button variant="secondary" disabled={pending} onClick={openSample}>Try the sample syllabus</Button>
+      <div className="product-actions">
+        <Button type="submit" aria-disabled={pending || Boolean(validate(file))}>Upload document</Button>
+        <Button variant="secondary" disabled={pending} onClick={openSample}>Try the sample syllabus</Button>
+      </div>
       <p className="retention">Working files expire after {usage?.file_hours ?? 24} hours. <a href="/privacy">Retention and privacy</a></p>
     </form>}
   </main>;
