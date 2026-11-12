@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+
+<html lang="en-IN">
+<head>
+<meta content="default-src 'none'; style-src 'sha256-kOcVZuQy+YARE1AdW8y6E1NMLHm8ke1sWWeZhzISHiM='; script-src 'sha256-jWJ39tovBIeV9VCqZo6LN6ZoFwobxjbYSPEJlPF4nY8='; img-src 'self' data:; font-src 'self' data:; base-uri 'none'; form-action 'none'" http-equiv="Content-Security-Policy"/><meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<title>Stacks and Queues</title>
+<style>:root {
+  color-scheme: light;
+  --sky: #8fb3cf;
+  --mist: #caddeb;
+  --steel: #4f7494;
+  --paper: #fbfaf7;
+  --surface: #ffffff;
+  --ink: #1b2833;
+  --muted: #455563;
+  --line: #c9d2d9;
+  --line-strong: #667a8d;
+  --accent: #263e51;
+  --selected: #edf3f7;
+  --radius: 1.125rem;
+  --page-shadow: 0 1px 2px #1b28330f, 0 6px 18px #1b283314;
+  --font-heading: Georgia, "Times New Roman", serif;
+  --font-body: system-ui, sans-serif;
+  --motion-fast: 120ms;
+  --motion-base: 200ms;
+  --motion-slow: 320ms;
+  --ease-out: cubic-bezier(.22,.61,.36,1);
+  --reading-size: 1.0625rem;
+  --reading-line: 1.65;
+  --reading-font: var(--font-body);
+  --reading-spacing: normal;
+  color: var(--ink);
+  background: var(--paper);
+  font: 1rem / 1.55 var(--font-body);
+}
+
+* { box-sizing: border-box; }
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --paper: #14212b;
+  --surface: #1b2833;
+  --ink: #f3f6f8;
+  --muted: #caddeb;
+  --line: #6e8396;
+  --line-strong: #8fb3cf;
+  --accent: #b9d4ea;
+  --selected: #263e51;
+  --page-shadow: 0 1px 2px #0005, 0 8px 24px #0005;
+}
+:root[data-theme="contrast"] {
+  color-scheme: dark;
+  --paper: #000;
+  --surface: #000;
+  --ink: #fff;
+  --muted: #fff;
+  --line: #fff;
+  --accent: #fff580;
+  --line-strong: #fff;
+  --selected: #302d0c;
+  --page-shadow: none;
+}
+:root[data-motion="off"] { --motion-fast: 0ms; --motion-base: 0ms; --motion-slow: 0ms; }
+[data-motion="off"] *, [data-motion="off"] *::before, [data-motion="off"] *::after {
+  animation: none !important;
+  transition: none !important;
+}
+:root[data-size="125"] { --reading-size: 1.328125rem; }
+:root[data-size="150"] { --reading-size: 1.59375rem; }
+:root[data-size="175"] { --reading-size: 1.859375rem; }
+:root[data-size="200"] { --reading-size: 2.125rem; }
+:root[data-spacing="roomy"] { --reading-line: 1.85; }
+:root[data-spacing="wide"] { --reading-line: 2.1; }
+:root[data-font="spaced"] {
+  --reading-font: Verdana, Tahoma, sans-serif;
+  --reading-spacing: .045em;
+}
+:root[data-preset="focus"] article { max-width: 52ch; }
+:root[data-preset="dyslexia"] article :is(em, i) { font-style: normal; }
+body { margin: 0; }
+a { color: var(--accent); text-underline-offset: .2em; }
+button, select { font: inherit; }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; box-shadow: 0 0 0 2px var(--surface); }
+[hidden] { display: none !important; }
+.reader-title-fallback {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.skip-link {
+  position: absolute;
+  z-index: 2;
+  inset: .5rem auto auto 1rem;
+  padding: .75rem;
+  transform: translateY(-150%);
+  background: var(--surface);
+}
+.skip-link:focus { transform: none; }
+
+.reader-header {
+  border-bottom: 1px solid var(--line);
+  background: var(--surface);
+}
+.header-inner {
+  max-width: 84rem;
+  margin: auto;
+  padding: .9rem clamp(1rem, 4vw, 2rem);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: .4rem 1rem;
+}
+.reader-title { position: relative; padding-inline-start: 2.75rem; min-inline-size: 0; }
+.reader-mark { position: absolute; inset: 0 auto auto 0; inline-size: 2rem; block-size: 2rem; pointer-events: none; }
+.mark-top { fill: var(--mist); }
+.mark-left { fill: var(--sky); }
+.mark-right { fill: var(--steel); }
+.header-inner p {
+  margin: 0;
+  font-size: clamp(1.15rem, 2.5vw, 1.6rem);
+  font-weight: 750;
+  font-family: var(--font-heading);
+  overflow-wrap: anywhere;
+}
+.header-inner a {
+  display: inline-flex;
+  align-items: center;
+  min-block-size: 2.75rem;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  padding-inline: .8rem;
+  font-weight: 650;
+}
+.header-inner a:hover { background: var(--selected); }
+
+.reader-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: start;
+  max-width: 84rem;
+  margin: auto;
+  gap: 1rem;
+  padding: clamp(1rem, 4vw, 2rem);
+}
+.contents, main, aside {
+  min-width: 0;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  overflow-wrap: anywhere;
+}
+.contents, aside {
+  padding: clamp(.7rem, 2vw, 1rem);
+  background: var(--selected);
+}
+.contents summary {
+  display: list-item;
+  padding: .65rem .3rem;
+  cursor: pointer;
+  font-weight: 700;
+}
+.contents ol {
+  list-style: none;
+  padding: 0;
+  margin: .25rem 0 0;
+}
+.contents li + li { margin-top: .25rem; }
+.contents [data-level="2"] { --indent: 1; }
+.contents [data-level="3"] { --indent: 2; }
+.contents [data-level="4"] { --indent: 3; }
+.contents [data-level="5"], .contents [data-level="6"] { --indent: 4; }
+.contents a {
+  display: block;
+  padding: .6rem .45rem .6rem calc(.45rem + var(--indent, 0) * .45rem);
+  border-inline-start: .25rem solid transparent;
+  min-block-size: 2.75rem;
+  border-radius: .25rem;
+}
+.contents [aria-current="location"] {
+  border-inline-start-color: var(--accent);
+  background: var(--selected);
+  font-weight: 750;
+}
+
+main {
+  position: relative;
+  padding: clamp(1rem, 4vw, 2.25rem);
+  background: var(--surface);
+  box-shadow: var(--page-shadow);
+}
+#reading-ruler {
+  position: absolute;
+  inset-inline: 0;
+  top: clamp(0px, calc(var(--ruler-position, 25%) - .75em), calc(100% - 1.5em));
+  height: 1.5em;
+  font-size: var(--reading-size);
+  border-block: 1px solid var(--accent);
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  pointer-events: none;
+}
+#ruler-controls { display: grid; gap: .25rem; }
+#ruler-position { width: 100%; min-block-size: 2rem; margin: 0; accent-color: var(--accent); }
+article {
+  max-width: 65ch;
+  margin-inline: auto;
+  font-family: var(--reading-font);
+  font-size: var(--reading-size);
+  line-height: var(--reading-line);
+  letter-spacing: var(--reading-spacing);
+}
+article > :first-child { margin-top: 0; }
+article > :last-child { margin-bottom: 0; }
+article :is(h1, h2, h3, h4, h5, h6) {
+  line-height: 1.25;
+  font-family: var(--font-heading);
+  font-weight: 600;
+  scroll-margin-block: 1rem;
+}
+article h1 { font-size: 1.8em; }
+article h2 { font-size: 1.4em; }
+article h3 { font-size: 1.2em; }
+article :is(h4, h5, h6) { font-size: 1.05em; }
+article img { max-width: 100%; height: auto; }
+article figure { margin: 1.5rem 0; }
+article details { margin-top: .5rem; }
+article summary { cursor: pointer; font-weight: 650; padding-block: .5rem; min-block-size: 2.75rem; }
+article blockquote { margin-inline: 0; border-inline-start: .2rem solid var(--line); padding-inline-start: 1em; }
+article pre { white-space: pre-wrap; }
+
+.table-scroll { max-width: 100%; overflow-x: auto; margin-block: 1rem; }
+table { border-collapse: collapse; width: 100%; }
+caption { text-align: start; font-weight: 700; margin-bottom: .4rem; }
+td, th { border: 1px solid var(--line-strong); padding: .4em .6em; text-align: start; }
+th { background: var(--selected); }
+td > p, th > p { margin: 0; }
+aside h2 { font: 600 1.25rem/1.2 var(--font-heading); margin: 0 0 .75rem; }
+.settings-controls {
+  display: grid;
+  gap: .4rem;
+}
+.settings-controls > label:not(.shortcut-toggle) { font-weight: 650; }
+.settings-controls select, aside button, dialog button {
+  min-block-size: 2.75rem;
+  padding: .35rem .55rem;
+  border: 1px solid var(--line-strong);
+  border-radius: .4rem;
+  color: var(--ink);
+  background: var(--surface);
+}
+.settings-controls select { width: 100%; margin-bottom: .45rem; }
+aside button, dialog button { cursor: pointer; font-weight: 650; }
+[data-motion="full"] :is(aside, dialog) button:active { transform: translateY(1px); }
+aside button:hover, dialog button:hover { background: var(--selected); }
+.setting-hint { color: var(--muted); margin: 0; }
+.setting-hint:empty { display: none; }
+.shortcut-toggle {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  min-block-size: 2.75rem;
+}
+.shortcut-toggle input { inline-size: 1.15rem; block-size: 1.15rem; flex: none; }
+.shortcut-toggle input { accent-color: var(--accent); }
+dialog {
+  color: var(--ink); background: var(--surface); border: 1px solid var(--line-strong);
+  width: min(32rem, calc(100% - 2rem)); max-height: calc(100% - 2rem);
+  border-radius: .65rem; padding: clamp(1rem, 4vw, 1.75rem);
+  opacity: 0; transition: opacity var(--motion-base), display var(--motion-base) allow-discrete, overlay var(--motion-base) allow-discrete;
+}
+dialog[open] { opacity: 1; }
+dialog h2 { margin-top: 0; font-family: var(--font-heading); }
+dialog::backdrop { background: color-mix(in srgb, var(--steel) 60%, transparent); }
+@starting-style { dialog[open] { opacity: 0; } }
+.read-along { margin-top: 1.25rem; padding-top: 1rem; border-top: 1px solid var(--line); }
+.read-along h3 { margin: 0 0 .65rem; font-size: 1rem; }
+.speech-controls { display: flex; flex-wrap: wrap; gap: .5rem; }
+.speech-controls button[aria-disabled="true"] { color: var(--muted); }
+#speech-status { margin-bottom: 0; }
+article .is-reading {
+  background: var(--selected);
+  border-inline-start: .25rem solid var(--accent);
+  padding-inline-start: .45rem;
+}
+
+@media (min-width: 52rem) {
+  .reader-layout { grid-template-columns: minmax(11rem, 1fr) minmax(0, 3fr); }
+  .contents { position: sticky; top: 1rem; max-height: calc(100vh - 2rem); overflow: auto; }
+  aside { grid-column: 2; }
+}
+@media (min-width: 74rem) {
+  .reader-layout { grid-template-columns: minmax(11rem, 1fr) minmax(0, 3.5fr) minmax(12rem, 1.15fr); }
+  aside { grid-column: auto; }
+}
+@media (prefers-contrast: more) {
+  :root { --line: var(--ink); }
+  :focus-visible { outline-width: 4px; }
+  .reader-mark { display: none; }
+  .reader-title { padding-inline-start: 0; }
+}
+@media (forced-colors: active) {
+  :focus-visible { outline-color: Highlight; box-shadow: none; }
+  .reader-mark { display: none; }
+  .reader-title { padding-inline-start: 0; }
+  .contents [aria-current="location"] { border-inline-start-color: Highlight; }
+}
+@media print {
+  :root { color-scheme: light; color: #000; background: #fff; }
+  .reader-header, .contents, aside, .skip-link { display: none; }
+  .reader-layout { display: block; padding: 0; }
+  main { color: #000; background: #fff; border: 0; padding: 0; box-shadow: none; }
+  article { max-width: none; }
+  a { color: #000; }
+  th { background: #fff; }
+  td, th { border-color: #000; }
+  article .is-reading { background: none; border: 0; }
+}
+</style></head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="reader-header">
+<div class="header-inner">
+<div class="reader-title">
+<svg aria-hidden="true" class="reader-mark" focusable="false" viewbox="0 0 40 44">
+<path class="mark-top" d="M20 2 38 12 20 22 2 12Z"></path>
+<path class="mark-left" d="m2 12 18 10v20L2 32Z"></path>
+<path class="mark-right" d="m20 22 18-10v20L20 42Z"></path>
+</svg>
+<p id="document-title">Stacks and Queues</p>
+</div>
+<a href="#reading-settings">Reading settings</a>
+</div>
+</header>
+<div class="reader-layout">
+<nav aria-label="Contents" class="contents">
+<details id="contents" open="">
+<summary>Contents</summary>
+<ol id="contents-list"><li data-level="1"><a href="#section-1">Two Rules for Removing Items</a></li><li data-level="2"><a href="#section-2">What the Interface Promises</a></li><li data-level="2"><a href="#section-3">One Sequence Two Outcomes</a></li><li data-level="1"><a href="#section-4">Stacks and Last In First Out</a></li><li data-level="2"><a href="#section-5">Trace an Undo History</a></li><li data-level="2"><a href="#section-6">Implement a Stack with a List</a></li><li data-level="2"><a href="#section-7">Empty and Full States</a></li><li data-level="1"><a href="#section-8">Queues and First In First Out</a></li><li data-level="2"><a href="#section-9">Trace a Print Queue</a></li><li data-level="2"><a href="#section-10">Implement a Queue with a Deque</a></li><li data-level="1"><a href="#section-11">Circular Queues and Wraparound</a></li><li data-level="2"><a href="#section-12">Update the Indices</a></li><li data-level="2"><a href="#section-13">Trace a Wrapped State</a></li><li data-level="1"><a href="#section-14">Choosing the Right Structure</a></li><li data-level="2"><a href="#section-15">Bracket Matching with a Stack</a></li><li data-level="2"><a href="#section-16">Breadth First Search with a Queue</a></li><li data-level="1"><a href="#section-17">Practice and Review</a></li><li data-level="2"><a href="#section-18">Exercises</a></li><li data-level="2"><a href="#section-19">Answers</a></li><li data-level="2"><a href="#section-20">Further Reading</a></li></ol>
+<p hidden="" id="contents-empty">This document has no headings.</p>
+</details>
+</nav>
+<main id="main" tabindex="-1">
+<article aria-labelledby="document-title"><p>Stacks and Queues</p><h1 id="section-1" tabindex="-1">Two Rules for Removing Items</h1><p>A stack and a queue can hold the same items and still give you a different next item. In this lecture, you will trace both structures, implement their core operations, and choose the right structure for a task.</p><h2 id="section-2" tabindex="-1">What the Interface Promises</h2><p>An abstract data type specifies the operations you can perform and what they return. A stack lets you insert and remove at the same end. A queue inserts at the rear and removes from the front. You can implement either structure with an array or linked nodes while keeping that rule intact.</p><h2 id="section-3" tabindex="-1">One Sequence Two Outcomes</h2><p>Start empty and insert A, then B, then C. A stack removes C first because C arrived last. A queue removes A first because A arrived first. The next removal is B in both examples, but the third differs again.</p><figure><img alt="Stacks remove the most recently added item first. Queues remove the earliest added item first." src="data:image/png;base64,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"/><details><summary>Image description</summary><p>Stacks remove the most recently added item first. Queues remove the earliest added item first.</p></details></figure><p>Figure 1. The next removal after inserting A, B, and C.</p><p>Predict the result if you insert D immediately after the first removal. Under stack rules, D is next. Under queue rules, B is next, because it arrived before C and D.</p><h1 id="section-4" tabindex="-1">Stacks and Last In First Out</h1><p>The accessible end of a stack is the top. Push adds an item there, pop removes and returns the top item, and peek reads it without removal. LIFO means last in, first out.</p><h2 id="section-5" tabindex="-1">Trace an Undo History</h2><p>Imagine editing a text file. You type a heading, insert an example, then delete a sentence. Each edit adds a record to the undo stack. The first undo reverses the sentence deletion, the most recent edit.</p><p>Operation                 Stack bottom to top      Result<br/>push(heading)             [heading]                —<br/>push(example)             [heading, example]       —<br/>push(delete sentence)     [heading, example, del]  —<br/>peek()                    [heading, example, del]  delete sentence<br/>pop()                     [heading, example]       delete sentence</p><h2 id="section-6" tabindex="-1">Implement a Stack with a List</h2><p>Use the right end of a Python list as the top. The final index, -1, reads the last element. Call pop without an index to remove from the same end.</p><p>stack = []<br/>stack.append("heading")<br/>stack.append("example")<br/>if stack:<br/>    print(stack[-1])    # peek: example<br/>    print(stack.pop())  # pop: example</p><h2 id="section-7" tabindex="-1">Empty and Full States</h2><p>Popping an empty stack is underflow. Python raises IndexError, so either check for an empty stack or document that your function raises. A fixed-capacity stack can also reject a push when it is full. With a dynamic array, push is amortized O(1) because an occasional resize copies the existing elements. Peek and removing the final item are O(1) for ordinary operations.</p><h1 id="section-8" tabindex="-1">Queues and First In First Out</h1><p>A queue has a front and a rear. Enqueue adds at the rear, dequeue removes and returns the front item, and front reads the next item without removing it. FIFO means first in, first out.</p><h2 id="section-9" tabindex="-1">Trace a Print Queue</h2><p>Mina submits a one-page handout, Dev submits a worksheet, and Jo submits a lab report. The printer takes Mina’s job first. If Ravi submits a job while Mina’s is printing, Ravi joins behind Jo. FIFO orders jobs by arrival, regardless of their length.</p><p>Table 1. Queue state as print jobs arrive and leave.</p><div aria-label="Table 1" class="table-scroll" role="region" tabindex="0"><table><thead><tr><th scope="col"><p><strong>Event</strong></p></th><th scope="col"><p><strong>Waiting front to rear</strong></p></th><th scope="col"><p><strong>Removed</strong></p></th></tr></thead><tbody><tr><td><p>Mina and Dev enqueue</p></td><td><p>Mina, Dev</p></td><td><p>None</p></td></tr><tr><td><p>Jo enqueues</p></td><td><p>Mina, Dev, Jo</p></td><td><p>None</p></td></tr><tr><td><p>Printer dequeues</p></td><td><p>Dev, Jo</p></td><td><p>Mina</p></td></tr><tr><td><p>Ravi enqueues</p></td><td><p>Dev, Jo, Ravi</p></td><td><p>None</p></td></tr><tr><td><p>Printer dequeues</p></td><td><p>Jo, Ravi</p></td><td><p>Dev</p></td></tr></tbody></table></div><h2 id="section-10" tabindex="-1">Implement a Queue with a Deque</h2><p>from collections import deque<br/><br/>jobs = deque(["Mina", "Dev", "Jo"])<br/>if jobs:<br/>    next_job = jobs[0]     # peek: Mina<br/>    running = jobs.popleft()<br/>jobs.append("Ravi")</p><p>Appending to the right and removing from the left of a deque are O(1). A list with pop(0) must shift the remaining elements, so that removal is O(n). Use the deque’s two ends to avoid moving the rest of the queue.</p><h1 id="section-11" tabindex="-1">Circular Queues and Wraparound</h1><p>A circular queue stores items in a fixed-length array and reuses slots freed by earlier removals. Let head be the next read index, tail the next write index, and size the number of stored items. Begin with head, tail, and size all equal to zero.</p><h2 id="section-12" tabindex="-1">Update the Indices</h2><p>After writing or reading a slot, advance the corresponding index by one modulo capacity. With capacity four, advancing from index 3 returns index 0. Size distinguishes an empty queue from a full one even when head and tail are equal.</p><p>enqueue(x):<br/>    if size == capacity: report full<br/>    slots[tail] = x<br/>    tail = (tail + 1) % capacity<br/>    size += 1<br/><br/>dequeue():<br/>    if size == 0: report empty<br/>    item = slots[head]<br/>    slots[head] = empty<br/>    head = (head + 1) % capacity<br/>    size -= 1<br/>    return item</p><h2 id="section-13" tabindex="-1">Trace a Wrapped State</h2><p>With four slots, enqueue A, B, C, and D, then dequeue twice. The remaining logical order is C, D and head is 2. Enqueue E at index 0 and F at index 1. The physical array now reads E, F, C, D, while the logical order is C, D, E, F.</p><p>All core operations are O(1) because they touch one slot and a few counters. The backing array occupies O(capacity) space. In a language with references, clearing a vacated slot lets an otherwise unreferenced object be reclaimed.</p><h1 id="section-14" tabindex="-1">Choosing the Right Structure</h1><p>Start by asking which item should be processed next. That rule usually identifies the structure before you choose its implementation.</p><p>Table 2. Common uses and the item processed next.</p><div aria-label="Table 2" class="table-scroll" role="region" tabindex="0"><table><thead><tr><th scope="col"><p><strong>Task</strong></p></th><th scope="col"><p><strong>Structure</strong></p></th><th scope="col"><p><strong>Next item</strong></p></th></tr></thead><tbody><tr><td><p>Undo an edit</p></td><td><p>Stack</p></td><td><p>Most recent edit still in the history</p></td></tr><tr><td><p>Check brackets</p></td><td><p>Stack</p></td><td><p>Most recent opening bracket without a match</p></td></tr><tr><td><p>Process print jobs</p></td><td><p>Queue</p></td><td><p>Earliest waiting job</p></td></tr><tr><td><p>Explore graph layers</p></td><td><p>Queue</p></td><td><p>Earliest discovered vertex still waiting</p></td></tr></tbody></table></div><h2 id="section-15" tabindex="-1">Bracket Matching with a Stack</h2><p>Read the expression from left to right. Push each opening bracket. On a closing bracket, pop and check whether the types match. An empty stack at that point means the closer has no opener. After the last character, any brackets left on the stack are unmatched.</p><p>In ([)] the first closing bracket is a parenthesis, but the current top is a square bracket. The expression is therefore invalid even though it contains one opener and one closer of each type.</p><h2 id="section-16" tabindex="-1">Breadth First Search with a Queue</h2><p>Enqueue the starting vertex and mark it visited. While the queue has entries, dequeue a vertex and enqueue each unvisited neighbor, marking each when it is enqueued. Vertices at distance one are processed before vertices at distance two. In an unweighted graph, this explores vertices in order of shortest distance from the start.</p><p>For a graph with edges from A to B and C, and from B to D, the visit order is A, B, C, D when neighbors are listed alphabetically. Marking vertices on enqueue prevents two neighbors from scheduling the same vertex twice.</p><h1 id="section-17" tabindex="-1">Practice and Review</h1><p>Work through the three exercises before reading the answers. Write the returned values and the final state so you can check both the order and what remains.</p><h2 id="section-18" tabindex="-1">Exercises</h2><ol><li>Start with an empty stack. Push 4, push 7, pop, push 9, peek, then pop. What does each read or removal return, and what is left?</li><li>Start with an empty queue. Enqueue 4, enqueue 7, dequeue, enqueue 9, read the front, then dequeue. What does each read or removal return, and what is left?</li><li>Use a circular queue of capacity three. Enqueue X and Y, dequeue once, then enqueue Z and W. List the physical slots from index 0 and the logical order from the front.</li></ol><h2 id="section-19" tabindex="-1">Answers</h2><p>1. Pop returns 7. Peek returns 9, and the second pop also returns 9. The stack contains [4].</p><p>2. Dequeue returns 4. Reading the front returns 7, and the second dequeue also returns 7. The queue contains [9].</p><p>3. The physical slots are [W, Y, Z]. Head and tail both point to index 1, and size is 3. The logical order is Y, Z, W.</p><h2 id="section-20" tabindex="-1">Further Reading</h2><p>For more examples of Python lists and deques, <a href="https://docs.python.org/3/tutorial/datastructures.html#using-lists-as-queues" rel="noopener noreferrer">Further reading on stacks and queues</a>.</p></article>
+<div aria-hidden="true" hidden="" id="reading-ruler"></div>
+</main>
+<aside aria-labelledby="settings-heading" id="reading-settings" tabindex="-1">
+<h2 id="settings-heading">Reading settings</h2>
+<div class="settings-controls">
+<label for="reader-preset">Reading preset</label>
+<select id="reader-preset">
+<option value="custom">Custom</option>
+<option value="low-vision">Low vision</option>
+<option value="dyslexia">Dyslexia-friendly</option>
+<option value="focus">Focus</option>
+</select>
+<label for="text-size">Text size</label>
+<select id="text-size">
+<option value="100">100%</option>
+<option value="125">125%</option>
+<option value="150">150%</option>
+<option value="175">175%</option>
+<option value="200">200%</option>
+</select>
+<label for="line-spacing">Line spacing</label>
+<select id="line-spacing">
+<option value="standard">Standard</option>
+<option value="roomy">Roomy</option>
+<option value="wide">Wide</option>
+</select>
+<label for="reading-theme">Theme</label>
+<select id="reading-theme">
+<option value="light">Light</option>
+<option value="dark">Dark</option>
+<option value="contrast">High contrast</option>
+</select>
+<label for="reading-font">Font</label>
+<select id="reading-font">
+<option value="standard">Default</option>
+<option value="spaced">Dyslexia-friendly spacing</option>
+</select>
+<label for="reader-motion">Motion</label>
+<select aria-describedby="reader-motion-source" id="reader-motion">
+<option value="full">Motion on</option>
+<option value="off">Motion off</option>
+</select>
+<p class="setting-hint" id="reader-motion-source">Following your device setting.</p>
+<label class="shortcut-toggle">
+<input id="ruler-enabled" type="checkbox"/>
+            Reading ruler
+          </label>
+<div hidden="" id="ruler-controls">
+<label for="ruler-position">Ruler position</label>
+<input id="ruler-position" max="100" min="0" type="range" value="25"/>
+</div>
+<label class="shortcut-toggle">
+<input checked="" id="reader-shortcuts" type="checkbox"/>
+            Enable single-key shortcuts
+          </label>
+<button id="open-shortcuts" type="button">Keyboard shortcuts</button>
+<button id="reset-settings" type="button">Reset settings</button>
+</div>
+<section aria-labelledby="read-along-heading" class="read-along">
+<h3 id="read-along-heading">Read-along</h3>
+<div class="speech-controls" hidden="" id="speech-controls">
+<button id="speech-play" type="button">Play</button>
+<button aria-disabled="true" id="speech-pause" type="button">Pause</button>
+<button aria-disabled="true" id="speech-stop" type="button">Stop</button>
+</div>
+<p id="speech-status" role="status"></p>
+</section>
+</aside>
+</div>
+<dialog aria-labelledby="shortcuts-heading" id="shortcuts-dialog">
+<h2 id="shortcuts-heading">Keyboard shortcuts</h2>
+<p>In the text or Contents, use these keys when single-key shortcuts are enabled.</p>
+<ul>
+<li><kbd>[</kbd> and <kbd>]</kbd> move between sections.</li>
+<li><kbd>C</kbd> opens Contents.</li>
+<li><kbd>+</kbd> or <kbd>−</kbd> adjusts text size.</li>
+<li><kbd>R</kbd> plays or pauses read-along when available.</li>
+</ul>
+<button autofocus="" id="close-shortcuts" type="button">Close keyboard shortcuts</button>
+</dialog>
+<script>(() => {
+  "use strict";
+
+  const contents = document.querySelector("#contents");
+  const contentsSummary = contents.querySelector("summary");
+  const links = Array.from(document.querySelectorAll("#contents-list a"));
+  const sections = links.map((link) => document.getElementById(link.hash.slice(1)));
+  const narrow = window.matchMedia("(max-width: 51.99rem)");
+  const setContentsLayout = () => { contents.open = !narrow.matches; };
+  setContentsLayout();
+  narrow.addEventListener("change", setContentsLayout);
+
+  let currentSection = -1;
+  function markCurrent(index) {
+    currentSection = index;
+    links.forEach((link, position) => {
+      if (position === index) link.setAttribute("aria-current", "location");
+      else link.removeAttribute("aria-current");
+    });
+  }
+
+  let linkScrollOffset;
+  function updateCurrent() {
+    if (!sections.length || (linkScrollOffset !== undefined &&
+        Math.abs(window.scrollY - linkScrollOffset) < 1)) return;
+    linkScrollOffset = undefined;
+    let current = 0;
+    for (let index = 0; index < sections.length; index += 1) {
+      if (sections[index].getBoundingClientRect().top <= 80) current = index;
+    }
+    markCurrent(current);
+  }
+
+  links.forEach((link, index) => {
+    link.addEventListener("click", (event) => {
+      if (event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
+      event.preventDefault();
+      if (narrow.matches) contents.open = false;
+      const section = sections[index];
+      section.focus({ preventScroll: true });
+      section.scrollIntoView({ block: "start" });
+      linkScrollOffset = window.scrollY;
+      try { history.replaceState(null, "", link.hash); } catch { /* Some file URLs restrict history. */ }
+      markCurrent(index);
+    });
+    link.addEventListener("keydown", (event) => {
+      const offsets = { ArrowDown: 1, ArrowUp: -1 };
+      if (event.key in offsets) {
+        event.preventDefault();
+        links[(index + offsets[event.key] + links.length) % links.length].focus();
+      } else if (event.key === "Home" || event.key === "End") {
+        event.preventDefault();
+        links[event.key === "Home" ? 0 : links.length - 1].focus();
+      } else if (event.key === "ArrowLeft") {
+        event.preventDefault();
+        contents.open = false;
+        contentsSummary.focus();
+      }
+    });
+  });
+  contentsSummary.addEventListener("keydown", (event) => {
+    if (event.key === "ArrowRight" || event.key === "ArrowLeft") {
+      event.preventDefault();
+      contents.open = event.key === "ArrowRight";
+    }
+  });
+
+  window.addEventListener("scroll", updateCurrent, { passive: true });
+  window.addEventListener("resize", updateCurrent);
+  const initial = links.findIndex((link) => link.hash === window.location.hash);
+  if (initial >= 0) {
+    linkScrollOffset = window.scrollY;
+    markCurrent(initial);
+  } else {
+    updateCurrent();
+  }
+
+  const settingsKey = "a11yra-reader-settings-v1";
+  const preset = document.querySelector("#reader-preset");
+  const root = document.documentElement;
+  const selects = {
+    size: document.querySelector("#text-size"),
+    spacing: document.querySelector("#line-spacing"),
+    theme: document.querySelector("#reading-theme"),
+    font: document.querySelector("#reading-font"),
+  };
+  const shortcuts = document.querySelector("#reader-shortcuts");
+  const motion = document.querySelector("#reader-motion");
+  const motionSource = document.querySelector("#reader-motion-source");
+  const motionMedia = window.matchMedia("(prefers-reduced-motion: reduce)");
+  const article = document.querySelector("main article");
+  const ruler = document.querySelector("#reading-ruler");
+  const rulerEnabled = document.querySelector("#ruler-enabled");
+  const rulerPosition = document.querySelector("#ruler-position");
+  const rulerControls = document.querySelector("#ruler-controls");
+  let saved = {};
+  try { saved = JSON.parse(localStorage.getItem(settingsKey)) || {}; } catch { /* Storage is optional. */ }
+  let motionChoice = saved.motion === "full" ? "full"
+    : saved.motion === "off" || saved.motion === "reduced" ? "off" : null;
+  const presets = {
+    "low-vision": { size: "175", spacing: "wide", theme: "contrast", font: "standard", ruler: false },
+    dyslexia: { size: "125", spacing: "roomy", theme: "light", font: "spaced", ruler: false },
+    focus: { size: "125", spacing: "roomy", theme: "light", font: "standard", ruler: true },
+  };
+
+  function positionRuler() {
+    ruler.style.setProperty("--ruler-position", rulerPosition.value + "%");
+  }
+
+  rulerPosition.addEventListener("input", positionRuler);
+  article.addEventListener("pointermove", (event) => {
+    if (!rulerEnabled.checked || event.pointerType === "touch") return;
+    const mainBounds = article.parentElement.getBoundingClientRect();
+    rulerPosition.value = String(Math.round(100 * (event.clientY - mainBounds.top) / mainBounds.height));
+    positionRuler();
+  });
+
+  function applySettings() {
+    const settings = { shortcuts: shortcuts.checked, motion: motionChoice, ruler: rulerEnabled.checked, preset: preset.value };
+    const motionMode = motionChoice ?? (motionMedia.matches ? "off" : "full");
+    root.dataset.motion = motionMode;
+    motion.value = motionMode;
+    motionSource.textContent = motionChoice ? "" : "Following your device setting.";
+    ruler.hidden = rulerControls.hidden = !rulerEnabled.checked;
+    positionRuler();
+    for (const [key, select] of Object.entries(selects)) {
+      root.dataset[key] = select.value;
+      settings[key] = select.value;
+    }
+    root.dataset.preset = preset.value;
+    try { localStorage.setItem(settingsKey, JSON.stringify(settings)); } catch { /* Settings still work in this tab. */ }
+  }
+
+  for (const [key, select] of Object.entries(selects)) {
+    if (Array.from(select.options).some((option) => option.value === saved[key])) {
+      select.value = saved[key];
+    }
+    select.addEventListener("change", () => { preset.value = "custom"; applySettings(); });
+  }
+  if (["custom", ...Object.keys(presets)].includes(saved.preset)) preset.value = saved.preset;
+  if (preset.value !== "custom") {
+    const values = presets[preset.value];
+    Object.entries(values).forEach(([key, value]) => {
+      if (key === "ruler") rulerEnabled.checked = value;
+      else selects[key].value = value;
+    });
+  }
+  preset.addEventListener("change", () => {
+    const values = presets[preset.value];
+    if (values) Object.entries(values).forEach(([key, value]) => {
+      if (key === "ruler") rulerEnabled.checked = value;
+      else selects[key].value = value;
+    });
+    applySettings();
+  });
+  shortcuts.checked = saved.shortcuts !== false;
+  shortcuts.addEventListener("change", applySettings);
+  rulerEnabled.checked = saved.ruler === true;
+  rulerEnabled.addEventListener("change", () => { preset.value = "custom"; applySettings(); });
+  motion.addEventListener("change", () => {
+    motionChoice = motion.value;
+    applySettings();
+  });
+  motionMedia.addEventListener("change", () => { if (motionChoice === null) applySettings(); });
+  document.querySelector("#reset-settings").addEventListener("click", () => {
+    Object.values(selects).forEach((select) => { select.selectedIndex = 0; });
+    shortcuts.checked = true;
+    rulerEnabled.checked = false;
+    rulerPosition.value = rulerPosition.defaultValue;
+    motionChoice = null;
+    preset.value = "custom";
+    applySettings();
+  });
+  applySettings();
+
+  const shortcutsDialog = document.querySelector("#shortcuts-dialog");
+  document.querySelector("#open-shortcuts").addEventListener("click", () => shortcutsDialog.showModal());
+  document.querySelector("#close-shortcuts").addEventListener("click", () => shortcutsDialog.close());
+
+  const speechStatus = document.querySelector("#speech-status");
+  const synthesis = window.speechSynthesis;
+  const speechSupported = Boolean(synthesis && window.SpeechSynthesisUtterance);
+  const play = document.querySelector("#speech-play");
+  const pause = document.querySelector("#speech-pause");
+  const stop = document.querySelector("#speech-stop");
+  const readable = "h1,h2,h3,h4,h5,h6,p,li,th,td,caption,blockquote";
+  let speechMode = "stopped";
+  let utterance;
+  let highlighted;
+  let queue = [];
+  let voice;
+
+  function setSpeechMode(mode, message) {
+    speechMode = mode;
+    play.textContent = mode === "paused" ? "Resume" : "Play";
+    play.setAttribute("aria-disabled", String(mode === "playing"));
+    pause.setAttribute("aria-disabled", String(mode !== "playing"));
+    stop.setAttribute("aria-disabled", String(mode === "stopped"));
+    speechStatus.textContent = message;
+  }
+
+  function clearHighlight() {
+    highlighted?.classList.remove("is-reading");
+    highlighted = undefined;
+  }
+
+  function readNext() {
+    clearHighlight();
+    const item = queue.shift();
+    if (!item) {
+      utterance = undefined;
+      setSpeechMode("stopped", "Read-along finished.");
+      return;
+    }
+    highlighted = item.node;
+    highlighted.classList.add("is-reading");
+    highlighted.scrollIntoView({ block: "nearest" });
+    const current = new SpeechSynthesisUtterance(item.text);
+    utterance = current;
+    current.voice = voice;
+    current.lang = voice.lang;
+    current.onend = () => { if (utterance === current) readNext(); };
+    current.onerror = () => {
+      if (utterance !== current) return;
+      utterance = undefined;
+      queue = [];
+      clearHighlight();
+      setSpeechMode("stopped", "Read-along could not play with the selected device voice.");
+    };
+    synthesis.speak(current);
+  }
+
+  function playReading() {
+    if (!speechSupported || speechMode === "playing") return;
+    if (speechMode === "paused") {
+      synthesis.resume();
+      setSpeechMode("playing", "Read-along resumed.");
+      return;
+    }
+
+    const language = root.lang.toLowerCase();
+    const primary = (tag) => tag.toLowerCase().split(/[-_]/)[0];
+    const local = synthesis.getVoices().filter((candidate) => candidate.localService);
+    voice = local.find((candidate) => candidate.lang.toLowerCase() === language)
+      || local.find((candidate) => primary(candidate.lang) === primary(language))
+      || (language === "und" && (local.find((candidate) => candidate.default) || local[0]));
+    if (!voice) {
+      speechStatus.textContent = "No offline voice is available for this document’s language.";
+      return;
+    }
+    const start = sections[currentSection];
+    queue = Array.from(document.querySelectorAll("article :is(" + readable + ")"))
+      .filter((node) => !node.closest("details:not([open]), [hidden]") &&
+        (!start || node === start || Boolean(start.compareDocumentPosition(node) & Node.DOCUMENT_POSITION_FOLLOWING)))
+      .map((node) => {
+        const copy = node.cloneNode(true);
+        copy.querySelectorAll(readable).forEach((child) => child.remove());
+        return { node, text: copy.textContent.trim() };
+      })
+      .filter((item) => item.text);
+    if (!queue.length) {
+      speechStatus.textContent = "There is no readable text in this section.";
+      return;
+    }
+    synthesis.resume();
+    setSpeechMode("playing", "Read-along started.");
+    readNext();
+  }
+
+  function pauseReading() {
+    if (speechMode !== "playing") return;
+    synthesis.pause();
+    setSpeechMode("paused", "Read-along paused.");
+  }
+
+  function stopReading() {
+    if (speechMode === "stopped") return;
+    utterance = undefined;
+    queue = [];
+    synthesis.cancel();
+    clearHighlight();
+    setSpeechMode("stopped", "Read-along stopped.");
+  }
+
+  if (speechSupported) {
+    document.querySelector("#speech-controls").hidden = false;
+    play.addEventListener("click", playReading);
+    pause.addEventListener("click", pauseReading);
+    stop.addEventListener("click", stopReading);
+    window.addEventListener("pagehide", stopReading);
+  } else {
+    speechStatus.textContent = "Read-along is unavailable in this browser.";
+  }
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") {
+      const expanded = event.target.closest?.("details[open]");
+      if (expanded) {
+        expanded.open = false;
+        expanded.querySelector("summary").focus();
+        event.preventDefault();
+      }
+      return;
+    }
+    if (!shortcuts.checked || event.altKey || event.ctrlKey || event.metaKey ||
+        !event.target.closest?.("main, .contents") ||
+        event.target.closest("input, select, textarea, button, [contenteditable]")) return;
+
+    const key = event.key.toLowerCase();
+    if (key === "[" || key === "]") {
+      const offset = key === "[" ? -1 : 1;
+      const next = Math.max(0, Math.min(links.length - 1, currentSection + offset));
+      links[next]?.click();
+    } else if (key === "c") {
+      contents.open = true;
+      contentsSummary.focus();
+    } else if (key === "+" || key === "-") {
+      const size = selects.size;
+      const offset = key === "+" ? 1 : -1;
+      size.selectedIndex = Math.max(0, Math.min(size.length - 1, size.selectedIndex + offset));
+      applySettings();
+    } else if (key === "r" && speechSupported) {
+      if (speechMode === "playing") pauseReading();
+      else playReading();
+    } else {
+      return;
+    }
+    event.preventDefault();
+  });
+})();
+</script></body>
+</html>
