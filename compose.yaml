@@ -41,6 +41,7 @@ services:
       dockerfile: frontend/Dockerfile
       args:
         SUPPORT_EMAIL: ${SUPPORT_EMAIL:-}
+        VITE_SHOW_ADVANCED: ${VITE_SHOW_ADVANCED:-false}
     ports:
       - "127.0.0.1:5173:8080"
     depends_on:

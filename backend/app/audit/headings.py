@@ -46,7 +46,7 @@ def _looks_like_heading(paragraph, runs, styles, body_size: int) -> bool:
         return False
 
     text = visible_text(paragraph).strip()
-    if len(text) > 90 or len(text.split()) > 12 or text.endswith((".", "?", "!", "…")):
+    if len(text) >= 80 or len(text.split()) > 12 or text.endswith((".", "?", "!", "…")):
         return False
 
     style_bold = _first_defined(word_flag(style.element, "w:rPr/w:b") for style in styles)
@@ -87,6 +87,7 @@ def check_headings(document: Document) -> tuple[Check, list[Finding]]:
         runs = text_runs(paragraph)
         if not runs:
             continue
+        text = visible_text(paragraph).strip()
         text_paragraphs += 1
         chain = paragraph_styles(word_value(paragraph, "w:pPr/w:pStyle"))
         level = _heading_level(chain)
@@ -102,8 +103,9 @@ def check_headings(document: Document) -> tuple[Check, list[Finding]]:
                     id=f"heading-skip-{index + 1:03d}", check_id="headings", location=location,
                     locator={"paragraph_index": index}, evidence=evidence,
                     barrier="A skipped level can make the document outline harder to follow.",
-                    suggestion=f"Use Heading {previous_level + 1} in Word if this starts the next section level.",
-                    severity="medium", confidence="high", status="open", fixable="recommendation_only",
+                    suggestion=f"Convert to Heading {previous_level + 1} to continue the outline, if this is a section heading.",
+                    severity="medium", confidence="high", status="open", fixable="teacher_approved",
+                    preview=text,
                 ))
             previous_level = level
         elif _looks_like_heading(paragraph, runs, chain, body_size):
@@ -112,8 +114,9 @@ def check_headings(document: Document) -> tuple[Check, list[Finding]]:
                 locator={"paragraph_index": index},
                 evidence="A short paragraph is bold or larger than the body text.",
                 barrier="A section label formatted this way may be missing from screen-reader heading navigation.",
-                suggestion="If this starts a section, apply the appropriate Heading style in Word.",
-                severity="low", confidence="medium", status="needs_review", fixable="recommendation_only",
+                suggestion=f"If this starts a section, convert it to Heading {min(previous_level + 1, 6)}.",
+                severity="low", confidence="high", status="needs_review", fixable="teacher_approved",
+                preview=text,
             ))
 
     if text_paragraphs and not previous_level:

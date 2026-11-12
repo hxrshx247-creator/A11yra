@@ -91,8 +91,8 @@ export function Landing() {
         </h1>
         <p className="landing-hero-description">Audit and repair educational Word documents, then share them in a reading space that students can adjust to suit them.</p>
         <div className="product-actions">
-          <ButtonLink href="#engine">See how it works</ButtonLink>
-          <ButtonLink variant="secondary" href="#reader">Try the reader</ButtonLink>
+          <ButtonLink href="/upload">Upload a document</ButtonLink>
+          <ButtonLink variant="secondary" href="/account/signup?sample=1">Try a sample audit</ButtonLink>
         </div>
       </div>
     </section>
@@ -137,7 +137,7 @@ export function Landing() {
       <div className="landing-wrap">
         <h2 id="cta-heading"><RevealWords text="Find barriers in your course documents." /></h2>
         <p className="landing-lead">A11yra checks six common barriers in Word documents. The audit is not a compliance guarantee.</p>
-        <ButtonLink href="/account/login?next=%2Fworkspace">Sign in <Icon name="arrow" /></ButtonLink>
+        <ButtonLink href="/account/login?next=%2Fupload">Sign in <Icon name="arrow" /></ButtonLink>
       </div>
     </section>
   </main>;

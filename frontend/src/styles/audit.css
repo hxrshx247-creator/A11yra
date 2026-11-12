@@ -98,6 +98,17 @@
 .empty-findings { position: relative; overflow: hidden; padding: 1rem .85rem; border: 1px solid var(--line); border-radius: var(--radius); background: var(--wash); }
 .empty-findings p { margin: 0; position: relative; font-weight: 700; }
 .empty-findings .icon { color: var(--status-success-ink); }
+.reader-preview { margin-block: 2rem; padding: clamp(1rem, 3vw, 1.5rem); border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); }
+.reader-preview h2 { margin-top: 0; }
+.reader-preview-tabs { display: flex; gap: .5rem; margin-block: .75rem; }
+.reader-preview-tabs button { min-block-size: var(--target); padding: .45rem .85rem; border: 1px solid var(--line-strong); border-radius: 999px; background: var(--wash); color: var(--ink); }
+.reader-preview-tabs button[aria-pressed="true"] { background: var(--ink); color: var(--surface); }
+.preview-caveat { color: var(--ink-muted); font-size: var(--small); }
+.reader-preview-list { max-block-size: 34rem; overflow: auto; margin: 0; padding: 0 0 0 2rem; list-style: decimal; }
+.reader-preview-list li { display: grid; gap: .3rem; padding: .65rem .75rem; border-block-end: 1px solid var(--line); }
+.preview-item-text { font-family: ui-monospace, Consolas, monospace; white-space: pre-wrap; overflow-wrap: anywhere; }
+.preview-issue { display: flex; align-items: start; gap: .4rem; color: var(--status-warning-ink); font-weight: 700; }
+.preview-issue .icon { flex: none; }
 @media (min-width: 58em) {
   .audit-overview { grid-template-columns: minmax(0, 1fr) minmax(0, 1.55fr); }
   .audit-grid { grid-template-columns: minmax(19rem, .95fr) minmax(0, 1.75fr); gap: 2rem; }

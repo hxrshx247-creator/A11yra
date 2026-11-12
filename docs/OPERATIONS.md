@@ -23,6 +23,16 @@ Create a Render Docker web service from the repo root with `backend/Dockerfile` 
 
 Use synthetic files on Render’s free tier. Restarts clear the free web service’s filesystem, free Postgres expires after 30 days, and common SMTP ports are restricted. A persistent file volume and durable database are required for a real pilot. [Render free-tier limits](https://render.com/docs/free), [Render web service setup](https://render.com/docs/web-services)
 
+### Render API and Vercel frontend
+
+1. Connect this repository to Render and create a Docker web service from the repository root. Set the Dockerfile path to `backend/Dockerfile` and the health check path to `/api/ready`. Attach a writable private disk at `/app/backend/.a11yra-data` for persistent uploads and published readers.
+2. Connect the same repository to Vercel. Build from the repository root with `npm ci --prefix frontend && npm run build --prefix frontend`, and publish `frontend/dist`. Building from the root makes the shared plan configuration available to Vite.
+3. Route `/api/:path*` and `/r/:path*` to the matching paths on the Render service. Put those rewrites ahead of the frontend SPA fallback to `/index.html` so a direct audit or sign-in URL loads the app while API and reader URLs reach the backend.
+4. On Render, set `A11YRA_ENV=production`, `A11YRA_DATA_DIR=/app/backend/.a11yra-data`, and set both `A11YRA_PUBLIC_URL` and `A11YRA_CORS_ORIGINS` to the exact public Vercel HTTPS origin. Add the Postgres URL as `DATABASE_URL`, a generated `A11YRA_SECRET`, and the SMTP settings in the dashboard. Keep these values out of Git. Use a STARTTLS port your Render plan and mail provider both support.
+5. After deployment, check `/api/ready` through the Vercel URL. Use a synthetic account to sign in, open a sample, approve a repair, re-audit, and download the offline reader. Also open a published reader URL if sharing is enabled for the demo.
+
+[Render Docker services](https://render.com/docs/docker) · [Vercel external rewrites](https://vercel.com/docs/routing/rewrites)
+
 ## Runbook
 
 - **Migrate** — Run `alembic -c backend/alembic.ini upgrade head` before startup when running without the Docker entrypoint. Run `alembic -c backend/alembic.ini check` to compare the database with model metadata.

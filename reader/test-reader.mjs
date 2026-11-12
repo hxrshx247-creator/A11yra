@@ -136,6 +136,26 @@ for (const name of ["offline.html", join("bundle", "index.html")]) {
   });
 }
 
+test("reading presets apply bundled settings and persist offline", async () => {
+  const context = await browser.newContext({ offline: true });
+  try {
+    const { page, remote } = await openOffline(context, join(temporary, "offline.html"));
+    await page.getByLabel("Reading preset").selectOption("low-vision");
+    assert.equal(await page.getByLabel("Text size").inputValue(), "175");
+    assert.equal(await page.getByLabel("Line spacing").inputValue(), "wide");
+    assert.equal(await page.getByLabel("Theme").inputValue(), "contrast");
+    await page.reload();
+    assert.equal(await page.getByLabel("Reading preset").inputValue(), "low-vision");
+    assert.equal(await page.locator("html").getAttribute("data-preset"), "low-vision");
+    await page.getByLabel("Font", { exact: true }).selectOption("spaced");
+    assert.equal(await page.getByLabel("Reading preset").inputValue(), "custom");
+    await page.getByLabel("Reading preset").selectOption("focus");
+    assert.equal(await page.getByLabel("Reading ruler").isChecked(), true);
+    assert.equal(await page.locator("html").getAttribute("data-preset"), "focus");
+    assert.deepEqual(remote, []);
+  } finally { await context.close(); }
+});
+
 test("read-along plays, pauses, advances and stops with a local voice", async () => {
   const context = await browser.newContext({ offline: true });
   await context.addInitScript(() => {

@@ -37,12 +37,12 @@ export function Upload() {
   const [message, setMessage] = useState("");
   const problem = validate(file) || message;
 
-  async function openSample() {
+  async function openSample(kind: "syllabus" | "lecture" | "messy" = "syllabus") {
     setPending(true);
     setMessage("");
     try {
-      const result = await uploadSample();
-      location.assign(`/audit/${result.document_id}`);
+      const result = await uploadSample(kind);
+      location.assign(`/audit/${result.document_id}?sample=${kind}`);
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "The sample could not be opened.");
     } finally {
@@ -84,8 +84,8 @@ export function Upload() {
   return <main id="main" className="upload-page" tabIndex={-1}>
     <PageHeading headingRef={heading} title="Upload a Word document" eyebrow="Document engine"
       description="Start with the handout, notes, or syllabus you want students to read." />
-    {usage && <p className="workspace-usage">You’ve used <strong>{usage.documents_used} of {usage.plan.documents_per_month}</strong> documents this month. <a href="/pricing">See plans</a></p>}
-    {workspace.role === "viewer" ? <p>Your workspace role allows you to view audits. <a href="/workspace">Back to workspace</a></p> :
+    {usage && import.meta.env.VITE_SHOW_ADVANCED === "true" && <p className="workspace-usage">You’ve used <strong>{usage.documents_used} of {usage.plan.documents_per_month}</strong> documents this month. <a href="/pricing">See plans</a></p>}
+    {workspace.role === "viewer" ? <p>Your workspace role allows you to view audits. {import.meta.env.VITE_SHOW_ADVANCED === "true" && <a href="/workspace">Back to workspace</a>}</p> :
     <form className="upload-form" onSubmit={handleSubmit}>
       <div className="drop-zone" data-dragging={dragging} onDrop={onDrop}
         onDragOver={(event) => { event.preventDefault(); if (!pending) setDragging(true); }}
@@ -110,9 +110,10 @@ export function Upload() {
       </div>
       <div className="product-actions">
         <Button type="submit" aria-disabled={pending || Boolean(validate(file))}>Upload document</Button>
-        <Button variant="secondary" disabled={pending} onClick={openSample}>Try the sample syllabus</Button>
+        <Button variant="secondary" disabled={pending} onClick={() => openSample("lecture")}>Try the Stack and Queue lecture</Button>
+        <Button variant="secondary" disabled={pending} onClick={() => openSample("messy")}>Try the messy handout</Button>
       </div>
-      <p className="retention">Working files expire after {usage?.file_hours ?? 24} hours. <a href="/privacy">Retention and privacy</a></p>
+      <p className="retention">Uploads are stored privately. Working files expire after {usage?.file_hours ?? 24} hours; you can delete a document sooner from its audit page. <a href="/privacy">Retention and privacy</a></p>
     </form>}
   </main>;
 }

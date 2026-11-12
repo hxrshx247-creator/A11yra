@@ -1,18 +1,22 @@
 from datetime import timedelta
+from io import BytesIO
 from pathlib import Path
 from typing import Annotated
 from uuid import UUID, uuid4
 
 from fastapi import APIRouter, Depends, File, Request, Response, UploadFile
+from docx import Document as WordDocument
 
 from app.audit.reaudit import reaudit_document
 from app.audit.runner import run_audit
+from app.audit.score import calculate_progress
+from app.audit.reader_preview import build_reader_preview
 from app.core.config import DOCX_MIME
 from app.core.errors import ApiError
 from app.core.validation import read_docx
 from app.export.docx_export import ExportPendingVerification, InvalidExport, prepare_docx_export
 from app.export.learner_download import prepare_learner_download
-from app.models import Audit, FixRequest, FixResponse, ReauditResponse, UploadResponse
+from app.models import Audit, FixRequest, FixResponse, ReaderPreview, ReauditResponse, UploadResponse
 from app.repair.service import repair_document
 from app.product.db import now
 from app.product.documents import record_audit, record_export
@@ -50,13 +54,19 @@ def upload_document(
 
 
 @router.post("/documents/sample", status_code=201)
-def sample_document(request: Request, response: Response, context=Depends(require_role("editor")),
+def sample_document(request: Request, response: Response, kind: str = "syllabus", context=Depends(require_role("editor")),
                     db=Depends(get_db)) -> UploadResponse:
-    fixture = Path(__file__).resolve().parents[2] / "fixtures" / "pilot-syllabus.docx"
+    if kind not in {"syllabus", "lecture", "messy"}:
+        raise ApiError(422, "invalid_sample", "Choose the lecture, syllabus, or messy handout sample.")
+    fixture_name = {"syllabus": "pilot-syllabus.docx", "lecture": "stack-queue-lecture.docx",
+                    "messy": "messy-handout.docx"}[kind]
+    fixture = Path(__file__).resolve().parents[2] / "fixtures" / fixture_name
     from starlette.datastructures import Headers
 
     with fixture.open("rb") as source:
-        file = UploadFile(source, filename="Sample syllabus.docx", headers=Headers({"content-type": DOCX_MIME}))
+        filename = {"syllabus": "Sample syllabus.docx", "lecture": "Stack and Queue lecture.docx",
+                    "messy": "Messy handout.docx"}[kind]
+        file = UploadFile(source, filename=filename, headers=Headers({"content-type": DOCX_MIME}))
         return save_upload(request, response, file, context, db)
 
 
@@ -105,6 +115,54 @@ def get_audit(id: str, request: Request, response: Response,
         raise document_not_found()
     response.headers["Cache-Control"] = "no-store"
     return audit
+
+
+@router.post("/documents/{id}/findings/{finding_id}/dismiss", status_code=204)
+def dismiss_heading_candidate(id: str, finding_id: str, request: Request, response: Response,
+                              _context=Depends(require_role("editor", document=True, active=True))) -> Response:
+    document_id = parse_document_id(id)
+    store = request.app.state.documents
+    with store.locked_session(document_id) as session:
+        if session is None:
+            raise document_not_found()
+        state = store.current_state(session)
+        audit = store.read_audit(state)
+        finding = next((item for item in audit.findings if item.id == finding_id), None)
+        if finding is None or not finding.id.startswith("heading-lookalike-") or finding.status != "needs_review":
+            raise ApiError(409, "finding_not_dismissible", "Only an unreviewed heading candidate can be dismissed.")
+        finding.status = "dismissed"
+        check = next((item for item in audit.checks if item.id == "headings"), None)
+        if check is not None:
+            check.finding_ids = [item.id for item in audit.findings if item.check_id == "headings" and item.status != "dismissed"]
+            if not check.finding_ids:
+                check.result = "passed"
+                check.summary = "Heading structure reviewed by the teacher."
+        audit.progress = calculate_progress(audit.checks)
+        store.save_audit(state, audit)
+    response.headers["Cache-Control"] = "no-store"
+    return Response(status_code=204, headers={"Cache-Control": "no-store"})
+
+
+@router.get("/documents/{id}/reader-preview", response_model=ReaderPreview)
+def reader_preview(id: str, request: Request, response: Response, version: str = "original",
+                  _context=Depends(require_role("viewer", document=True, active=True))) -> ReaderPreview:
+    if version not in {"original", "repaired"}:
+        raise ApiError(422, "invalid_version", "Choose original or repaired preview.")
+    document_id = parse_document_id(id)
+    store = request.app.state.documents
+    with store.locked_session(document_id) as session:
+        if session is None:
+            raise document_not_found()
+        state = store.current_state(session)
+        audit = store.read_audit(state)
+        path = session / "original.docx" if version == "original" else state / "working.docx"
+        try:
+            document = WordDocument(BytesIO(path.read_bytes()))
+            result = build_reader_preview(document, audit, version)
+        except (OSError, ValueError):
+            raise ApiError(500, "preview_failed", "The screen reader preview could not be prepared.") from None
+    response.headers["Cache-Control"] = "no-store"
+    return result
 
 
 @router.post("/documents/{id}/fixes")

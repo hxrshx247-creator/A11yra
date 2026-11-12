@@ -131,3 +131,21 @@ def set_table_header(document: Document, finding: Finding, _payload: FixPayload)
             marker, "w:tblCellSpacing", "w:jc", "w:hidden", "w:ins", "w:del", "w:trPrChange"
         )
     marker.set(qn("w:val"), "1")
+
+
+def set_heading(document: Document, finding: Finding, payload: FixPayload) -> None:
+    level = payload.heading_level
+    if level is None or not 1 <= level <= 6:
+        raise RepairRejected("Choose a heading level from 1 to 6.")
+    paragraphs = body_paragraphs(document)
+    index = _index(finding, "paragraph_index")
+    if index >= len(paragraphs):
+        raise RepairRejected("The paragraph could not be found.")
+    # Assigning a real built-in style updates the Word outline while retaining direct run formatting.
+    target = paragraphs[index]
+    ppr = target.get_or_add_pPr()
+    style = ppr.find(qn("w:pStyle"))
+    if style is None:
+        style = OxmlElement("w:pStyle")
+        ppr.insert(0, style)
+    style.set(qn("w:val"), document.styles[f"Heading {level}"].style_id)

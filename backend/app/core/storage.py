@@ -54,6 +54,12 @@ class DocumentStore:
             return self.read_audit(self.current_state(session)) if session is not None else None
 
     @staticmethod
+    def save_audit(state: Path, audit: Audit) -> None:
+        staged = state / "audit.json.tmp"
+        staged.write_text(audit.model_dump_json(), encoding="utf-8")
+        staged.replace(state / "audit.json")
+
+    @staticmethod
     def _write_state(state: Path, contents: bytes, audit: Audit) -> None:
         (state / "working.docx").write_bytes(contents)
         (state / "audit.json").write_text(audit.model_dump_json(), encoding="utf-8")

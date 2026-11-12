@@ -6,6 +6,16 @@ A11yra helps educators find and repair common accessibility barriers in Word doc
 
 ## Run locally
 
+**Fastest setup (Docker Compose):** with Docker Compose 2.24 or newer, run one command from the repository root:
+
+```sh
+docker compose up --build --wait
+```
+
+Then open [A11yra](http://127.0.0.1:5173/). After signing in, select **Try the Stack and Queue lecture** or **Try the messy handout** to see the workflow without supplying a document. Use `docker compose down` to stop the app. `VITE_SHOW_ADVANCED=true` at build time shows the workspace, pricing, audit-history and account-management areas for extended demos.
+
+The manual Python and Node setup below is useful when you do not use Docker.
+
 **Docker Compose** starts the web app, API, and Postgres. Use Docker Compose 2.24 or newer and run this from the repository root:
 
 ```sh
@@ -62,12 +72,26 @@ Both setups use [http://127.0.0.1:5173/](http://127.0.0.1:5173/). The defaults w
 
 ## Try the four-minute demo
 
-1. Open [Create an account](http://127.0.0.1:5173/account/signup?sample=1) to start with the built-in syllabus. The sample opens at **2 of 6 checks passed**. You can also select **Audit the sample syllabus** from a new workspace.
-2. Open each finding and select **Review fix**. Set the title to `Study Group Syllabus`, the language to `en-IN`, the chart description to `Attendance doubled from 12 to 24 students`, and the link label to `Weekly study group schedule`.
-3. Select **Re-audit document**, then **Run re-audit**. The sample should show **6 of 6 checks passed** and **four verified fixes**.
-4. Continue to export. Open the downloaded offline HTML in your browser and try **Reading settings**. You can also publish an expiring reader link or download the repaired Word file.
+1. Sign in and choose **Try the Stack and Queue lecture**. Its original screen-reader view includes missing title/language, an undescribed image, and a generic link.
+2. Open each finding, inspect the lecture, and approve a title, language, image description, and useful link label. The sample keeps the six-page stack-and-queue lesson content.
+3. Select **Re-audit document**, then **Run re-audit**. Review the verified changes and open **View repaired screen reader view**.
+4. Continue to export. Open the downloaded offline HTML and try **Reading settings** and the one-click presets.
 
-The six checks cover document title, default language, headings, image descriptions, table headers, and link text. Heading findings guide edits in Word. The audit covers these checks and still needs human review of the document and its exported reading experience.
+The six checks cover document title, default language, heading structure and levels, image descriptions, table headers, and link text. The audit page includes an original/repaired linear screen-reader preview. The messy handout shows skipped heading levels, filename-style alt text, an unheaded table, vague links, and missing title/language so reviewers can see issues that require judgment.
+
+## Privacy and limitations
+
+Uploaded originals, working DOCX files, and the current audit are stored in private server storage. Working files expire after 24 hours by default; audit history has a separate retention period (30 days by default). A teacher can delete a document from its audit page before expiry. Published reader links have their own expiry and can be revoked. See [data inventory](docs/DATA-INVENTORY.md) for deployment-controlled retention details.
+
+A11yra checks common, machine-detectable DOCX barriers; it does not certify WCAG conformance. It cannot reliably infer whether a picture is decorative, whether table cells make sense as headers, or whether a proposed heading and link label reflect the author’s intent. Teachers must inspect the source and learner reader. Complex layout, scanned documents, equations, charts, tracked changes, and non-main document stories may need manual review.
+
+## Built during the event vs pre-existing
+
+Fill in this section before submission so judges can distinguish event work from prior work:
+
+- **Pre-existing:** [Add components, libraries, templates, or code that existed before the event.]
+- **Built or changed during AccessED Hacks:** [Add the event-built features and the team’s contributions.]
+- **Third-party assets and services:** [Add any external assets, libraries, or services used.]
 
 ## Project layout
 

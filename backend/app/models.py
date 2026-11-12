@@ -8,8 +8,8 @@ CheckId = Literal["title", "language", "headings", "images", "tables", "links"]
 CheckResult = Literal["passed", "issues", "needs_review", "not_evaluated"]
 Severity = Literal["high", "medium", "low"]
 Confidence = Literal["high", "medium", "low"]
-FindingStatus = Literal["open", "fixed_unverified", "verified_fixed", "needs_review"]
-FixType = Literal["set_title", "set_language", "set_alt_text", "set_link_text", "set_table_header"]
+FindingStatus = Literal["open", "fixed_unverified", "verified_fixed", "needs_review", "dismissed"]
+FixType = Literal["set_title", "set_language", "set_alt_text", "set_link_text", "set_table_header", "set_heading"]
 
 
 class Finding(BaseModel):
@@ -58,6 +58,7 @@ class FixPayload(BaseModel):
     alt_text: str | None = None
     decorative: bool | None = None
     new_text: str | None = None
+    heading_level: int | None = Field(default=None, ge=1, le=6)
 
 
 class Fix(BaseModel):
@@ -103,3 +104,15 @@ class UploadResponse(BaseModel):
     document_id: UUID
     filename: str = Field(min_length=1)
     audit: Audit
+
+
+class ReaderItem(BaseModel):
+    type: str
+    text: str
+    issue: str | None = None
+    finding_id: str | None = None
+
+
+class ReaderPreview(BaseModel):
+    version: Literal["original", "repaired"]
+    items: list[ReaderItem]

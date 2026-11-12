@@ -22,6 +22,7 @@ const env = {
   DATABASE_URL: `sqlite:///${join(temp, "test.db").replaceAll("\\", "/")}`,
   SMTP_HOST: "",
   STRIPE_TEST_ENABLED: "0",
+  VITE_SHOW_ADVANCED: "true",
 };
 const services = [];
 

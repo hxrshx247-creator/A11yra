@@ -87,7 +87,7 @@ test("sample signup opens one audit with the next step", { timeout: 60_000, skip
       await page.waitForURL("**/#reader");
       await page.waitForFunction(() => document.activeElement?.id === "reader");
       await page.getByRole("main").getByRole("link", { name: "Sign in", exact: true }).press("Enter");
-      await page.waitForURL("**/account/login?next=%2Fworkspace");
+      await page.waitForURL("**/account/login?next=%2Fupload");
       await page.goto(new URL("/account/signup?sample=1", site).href);
       await page.getByLabel("Email address (required)").fill(`sample-${randomUUID()}@example.test`);
       await page.getByLabel("Password (required)").fill("a test password 123");

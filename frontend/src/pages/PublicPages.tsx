@@ -172,7 +172,7 @@ export function PublicPage({ route }: { route: PublicRoute }) {
       <section>
         <h2>Your controls</h2>
         <p>Delete a document from its audit history page to remove its files, audit history, repair and export records, and published readers. Activity and quota records can remain until their own expiry.</p>
-        <p>In <a href="/account/settings">Account and data</a> you can export your data or delete your account. Deletion removes your profile, sessions, account links, memberships, invitations, uploads, published readers and personal workspace, including its API keys.</p>
+        {import.meta.env.VITE_SHOW_ADVANCED === "true" && <p>In <a href="/account/settings">Account and data</a> you can export your data or delete your account. Deletion removes your profile, sessions, account links, memberships, invitations, uploads, published readers and personal workspace, including its API keys.</p>}
         <p>Other workspaces keep their own data. Their repair and export records lose your account reference. Activity events can remain until expiry with identifying fields removed from entries tied to your account.</p>
       </section>
       <section>

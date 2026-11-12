@@ -68,6 +68,8 @@
   --reading-font: Verdana, Tahoma, sans-serif;
   --reading-spacing: .045em;
 }
+:root[data-preset="focus"] article { max-width: 52ch; }
+:root[data-preset="dyslexia"] article :is(em, i) { font-style: normal; }
 body { margin: 0; }
 a { color: var(--accent); text-underline-offset: .2em; }
 button, select { font: inherit; }

@@ -2,7 +2,11 @@ import { PageHeading } from "../components/PageHeading";
 import { CheckList } from "../components/CheckList";
 import { ProgressMeter } from "../components/ProgressMeter";
 import { ButtonLink } from "../components/Button";
+import { Button } from "../components/Button";
 import { Icon } from "../components/Icon";
+import { useEffect, useState } from "react";
+import { deleteDocument, getReaderPreview } from "../api/client";
+import type { ReaderPreview } from "../types/contract";
 import { useAudit } from "../hooks/useAudit";
 import { usePageHeading } from "../hooks/usePageHeading";
 import { useWorkspace } from "../hooks/useProduct";
@@ -13,7 +17,29 @@ export function AuditDashboard({ documentId }: { documentId: string }) {
   const heading = usePageHeading("Document audit");
   const { workspace } = useWorkspace();
   const canEdit = workspace.role !== "viewer";
-  const sample = new URLSearchParams(location.search).get("sample") === "1";
+  const sample = new URLSearchParams(location.search).get("sample");
+  const [version, setVersion] = useState<"original" | "repaired">(() =>
+    new URLSearchParams(location.search).get("preview") === "repaired" ? "repaired" : "original");
+  const [preview, setPreview] = useState<ReaderPreview>();
+  const [previewError, setPreviewError] = useState("");
+  const [deleteMessage, setDeleteMessage] = useState("");
+  useEffect(() => {
+    const controller = new AbortController();
+    setPreview(undefined);
+    getReaderPreview(documentId, version, controller.signal).then(setPreview).catch((reason) => {
+      if (!controller.signal.aborted) setPreviewError(reason instanceof Error ? reason.message : "Preview unavailable.");
+    });
+    return () => controller.abort();
+  }, [documentId, version]);
+  async function deleteUpload() {
+    if (!window.confirm("Delete this document and its stored working files?")) return;
+    try {
+      await deleteDocument(documentId);
+      location.assign("/upload");
+    } catch (reason) {
+      setDeleteMessage(reason instanceof Error ? reason.message : "The document could not be deleted.");
+    }
+  }
 
   return (
     <main className="audit-page" id="main" tabIndex={-1}>
@@ -32,12 +58,34 @@ export function AuditDashboard({ documentId }: { documentId: string }) {
               <div className="product-actions">
                 {canEdit && <ButtonLink href={`/compare/${documentId}`}>Re-audit document</ButtonLink>}
                 <ButtonLink variant={canEdit ? "secondary" : "primary"} href={`/export/${documentId}`}>Export document</ButtonLink>
-                <a href={`/history/${documentId}`}>View audit history</a>
+                {import.meta.env.VITE_SHOW_ADVANCED === "true" && <a href={`/history/${documentId}`}>View audit history</a>}
+                {canEdit && <Button variant="quiet" onClick={deleteUpload}>Delete this document</Button>}
               </div>
+              {deleteMessage && <p role="alert" className="form-error">{deleteMessage}</p>}
             </section>
           </div>
-          {sample && <p className="product-notice">Choose a finding to see what it means, then review a fix.</p>}
+          {sample && <p className="product-notice">{sample === "messy"
+            ? "This sample includes choices that need your judgment. Review the filename-style image description, outline levels, and table labels before deciding what to change."
+            : "Choose a finding to see what it means, then review a fix."}</p>}
           <CheckList audit={audit} canEdit={canEdit} />
+          <section className="reader-preview" id="screen-reader-view" aria-labelledby="reader-preview-heading">
+            <h2 id="reader-preview-heading">Screen reader view</h2>
+            <div className="reader-preview-tabs" role="group" aria-label="Preview version">
+              <button type="button" aria-pressed={version === "original"} onClick={() => setVersion("original")}>Original</button>
+              <button type="button" aria-pressed={version === "repaired"} onClick={() => setVersion("repaired")}>Repaired</button>
+            </div>
+            <p className="preview-caveat">Approximation of linear screen reader output; real behavior varies by software.</p>
+            {previewError && <p role="status">{previewError}</p>}
+            {!preview && !previewError && <p role="status">Loading preview…</p>}
+            {preview && <ol role="list" className="reader-preview-list">{preview.items.map((item, index) => {
+              const finding = item.finding_id && audit.findings.find((row) => row.id === item.finding_id);
+              return <li key={`${item.type}-${index}`}>
+                <span className="preview-item-text">{item.text}</span>
+                {item.issue && <span className="preview-issue"><Icon name="info" /> Issue{finding ? `: ${finding.barrier}` : ": needs review"}</span>}
+                {finding && <a href={`/audit/${documentId}?check=${finding.check_id}`}>View {finding.check_id} finding</a>}
+              </li>;
+            })}</ol>}
+          </section>
         </>
       )}
     </main>

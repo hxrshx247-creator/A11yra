@@ -53,7 +53,10 @@ export function ComparePage({ documentId }: { documentId: string }) {
         <div className="comparison">
           <h2 className="comparison-heading" ref={resultsHeading} tabIndex={-1}>Re-audit results</h2>
           <BeforeAfterPanel result={result} />
-          <div><ButtonLink href={`/export/${documentId}`}>Continue to export</ButtonLink></div>
+          <div className="product-actions">
+            <ButtonLink variant="secondary" href={`/audit/${documentId}?preview=repaired#screen-reader-view`}>View repaired screen reader view</ButtonLink>
+            <ButtonLink href={`/export/${documentId}`}>Continue to export</ButtonLink>
+          </div>
         </div>
       )}
     </main>

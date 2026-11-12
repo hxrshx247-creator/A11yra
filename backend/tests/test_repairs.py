@@ -118,7 +118,7 @@ def test_invalid_mismatched_and_repeat_fixes_are_skipped(client, broken_upload):
     ("payload", "code"),
     [
         ({"fixes": [{}]}, "fix_invalid"),
-        ({"fixes": [fix("title-missing", "set_heading")]}, "fix_not_supported"),
+        ({"fixes": [fix("title-missing", "set_heading", heading_level="2")]}, "fix_invalid"),
         ({"fixes": [fix("img-001", "set_alt_text", decorative="yes")]}, "fix_invalid"),
     ],
 )

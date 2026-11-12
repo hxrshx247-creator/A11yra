@@ -54,7 +54,12 @@ test("signup, four verified repairs, public reader, workspace and public pages",
     await page.getByRole("button", { name: "Run re-audit" }).press("Enter");
     await page.getByRole("heading", { name: "Verified fixed (4)" }).waitFor();
     await page.getByText("6 of 6 checks passed", { exact: true }).waitFor();
-    await page.getByRole("link", { name: "Continue to export" }).press("Enter");
+    await page.getByRole("link", { name: "View repaired screen reader view" }).press("Enter");
+    await page.getByRole("heading", { name: "Screen reader view" }).waitFor();
+    await page.getByRole("button", { name: "Repaired" }).waitFor();
+    assert.doesNotMatch(await page.locator(".reader-preview-list").innerText(), /Image: no description|Link: click here|Document title: none|Language: not set/);
+    await scan(page);
+    await page.getByRole("link", { name: "Export document" }).press("Enter");
     await page.getByRole("button", { name: "Publish reader link" }).click();
     const link = page.getByRole("link", { name: "Open published reader (new tab)" });
     await link.waitFor();

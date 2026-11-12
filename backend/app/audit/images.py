@@ -1,5 +1,6 @@
 from docx.document import Document
 from docx.oxml.ns import qn
+import re
 
 from app.audit._body import BODY_CONTENT, body_paragraphs
 from app.models import Check, CheckResult, Finding
@@ -26,7 +27,11 @@ def check_images(document: Document) -> tuple[Check, list[Finding]]:
     image_count = 0
     for image_index, (paragraph_index, properties) in enumerate(iter_picture_properties(document)):
         image_count += 1
-        if properties is not None and (properties.get("descr", "").strip() or _is_decorative(properties)):
+        description = properties.get("descr", "").strip() if properties is not None else ""
+        if properties is not None and _is_decorative(properties):
+            continue
+        looks_like_filename = bool(description and re.fullmatch(r"[^\\/]+\.(?:png|jpe?g|gif|bmp|svg|tiff?)", description, re.IGNORECASE))
+        if description and not looks_like_filename:
             continue
 
         findings.append(Finding(
@@ -34,13 +39,15 @@ def check_images(document: Document) -> tuple[Check, list[Finding]]:
             check_id="images",
             location=f"Image {image_index + 1}, paragraph {paragraph_index + 1}",
             locator={"image_index": image_index, "paragraph_index": paragraph_index},
-            evidence="The image has no alt text and is unmarked as decorative.",
+            evidence=("The alt text looks like a filename, which may not describe the picture." if looks_like_filename
+                      else "The image has no alt text and is unmarked as decorative."),
             barrier="A reader who cannot see the image may miss information it conveys.",
-            suggestion="Describe what the image communicates, or mark it decorative if it adds no information.",
+            suggestion="Review the image and edit its description, or mark it decorative if it adds no information.",
             severity="medium",
             confidence="high",
-            status="open",
+            status="needs_review" if looks_like_filename else "open",
             fixable="teacher_approved",
+            preview=description or None,
         ))
 
     result: CheckResult

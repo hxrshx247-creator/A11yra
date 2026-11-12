@@ -136,9 +136,39 @@ def make_syllabus(output_dir: Path, *, pilot: bool = False) -> Path:
     return path
 
 
+def make_messy_handout(path: Path) -> Path:
+    """Create a review-focused sample with plausible but ambiguous accessibility choices."""
+    document = Document()
+    document.core_properties.title = ""
+    language = document.styles.element.find("w:docDefaults/w:rPrDefault/w:rPr/w:lang", namespaces=nsmap)
+    if language is not None:
+        language.getparent().remove(language)
+    document.add_heading("Stack and Queue Concepts", level=1)
+    document.add_paragraph("A stack follows last in, first out. A queue follows first in, first out.")
+    document.add_heading("Stack operations", level=3)
+    document.add_paragraph("Push adds an item; pop removes the newest item.")
+    document.add_heading("Queue operations", level=2)
+    document.add_paragraph("Enqueue adds an item at the rear; dequeue removes the front item.")
+    picture = document.add_picture(attendance_chart(), width=Inches(2.5))
+    picture._inline.docPr.set("descr", "attendance-chart.png")
+    paragraph = document.add_paragraph("Reference: ")
+    add_link(paragraph, "click here")
+    paragraph = document.add_paragraph("More examples: ")
+    add_link(paragraph, "read more")
+    table = document.add_table(rows=3, cols=2)
+    table.style = "Table Grid"
+    for row, values in zip(table.rows, [("Push", "Add to top"), ("Pop", "Remove from top"), ("Enqueue", "Add to rear")]):
+        for cell, value in zip(row.cells, values):
+            cell.text = value
+    path.parent.mkdir(parents=True, exist_ok=True)
+    document.save(path)
+    return path
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output-dir", type=Path, default=FIXTURE_DIR)
     args = parser.parse_args()
-    for path in (*make_fixtures(args.output_dir), make_syllabus(args.output_dir), make_syllabus(args.output_dir, pilot=True)):
+    for path in (*make_fixtures(args.output_dir), make_syllabus(args.output_dir), make_syllabus(args.output_dir, pilot=True),
+                 make_messy_handout(args.output_dir / "messy-handout.docx")):
         print(f"Created {path}")

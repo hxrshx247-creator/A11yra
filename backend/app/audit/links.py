@@ -6,7 +6,7 @@ from docx.oxml.ns import qn
 from app.audit._body import BODY_CONTENT, body_paragraphs, visible_text
 from app.models import Check, CheckResult, Finding
 
-GENERIC_LABELS = {"click here", "here", "link"}
+GENERIC_LABELS = {"click here", "here", "link", "read more"}
 
 
 def iter_link_elements(paragraph):

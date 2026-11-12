@@ -23,6 +23,12 @@ def compare_audits(previous: Audit, fresh: Audit) -> AuditDiff:
 
     for finding in previous.findings:
         if finding.id in fresh_ids:
+            if finding.status == "dismissed":
+                match = next(item for item in fresh.findings if item.id == finding.id)
+                match.status = "dismissed"
+            continue
+        if finding.status == "dismissed":
+            fresh.findings.append(finding)
             continue
         if finding.status == "fixed_unverified" and finding.check_id in evaluated:
             finding = finding.model_copy(update={"status": "verified_fixed"})
@@ -35,8 +41,12 @@ def compare_audits(previous: Audit, fresh: Audit) -> AuditDiff:
 
     for check in fresh.checks:
         findings = grouped[check.id]
-        check.finding_ids = [finding.id for finding in findings]
-        if check.result == "passed" and any(finding.status != "verified_fixed" for finding in findings):
+        check.finding_ids = [finding.id for finding in findings if finding.status != "dismissed"]
+        active_findings = [finding for finding in findings if finding.status != "dismissed"]
+        if check.id == "headings" and check.result == "needs_review" and not active_findings:
+            check.result = "passed"
+            check.summary = "Heading structure reviewed by the teacher."
+        if check.result == "passed" and any(finding.status != "verified_fixed" for finding in active_findings):
             check.result = "needs_review"
             check.summary = "A finding from the previous audit still needs review."
 

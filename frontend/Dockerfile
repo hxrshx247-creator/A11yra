@@ -6,6 +6,8 @@ COPY frontend/ .
 COPY backend/app/product/plan_prices.json /web/backend/app/product/plan_prices.json
 ARG SUPPORT_EMAIL
 ENV SUPPORT_EMAIL=${SUPPORT_EMAIL}
+ARG VITE_SHOW_ADVANCED=false
+ENV VITE_SHOW_ADVANCED=${VITE_SHOW_ADVANCED}
 RUN npm run build
 
 FROM nginx:1.28-alpine

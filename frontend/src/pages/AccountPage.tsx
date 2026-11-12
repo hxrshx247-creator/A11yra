@@ -18,16 +18,17 @@ const accountModes = {
 export type AccountMode = keyof typeof accountModes;
 
 function nextPath() {
-  const next = new URLSearchParams(location.search).get("next") ?? "/workspace";
+  const fallback = import.meta.env.VITE_SHOW_ADVANCED === "true" ? "/workspace" : "/upload";
+  const next = new URLSearchParams(location.search).get("next") ?? fallback;
   try {
     const destination = new URL(next, location.origin);
     if (next.startsWith("/") && destination.origin === location.origin) {
       return destination.pathname + destination.search + destination.hash;
     }
   } catch {
-    return "/workspace";
+    return fallback;
   }
-  return "/workspace";
+  return fallback;
 }
 
 export function AccountPage({ mode }: { mode: AccountMode }) {
@@ -48,8 +49,8 @@ export function AccountPage({ mode }: { mode: AccountMode }) {
     const personal = profile.workspaces.find((workspace) => workspace.personal);
     if (personal) selectWorkspace(personal.id);
     setSignedIn(true);
-    const result = await uploadSample();
-    location.assign(`/audit/${encodeURIComponent(result.document_id)}?sample=1`);
+    const result = await uploadSample("lecture");
+    location.assign(`/audit/${encodeURIComponent(result.document_id)}?sample=lecture`);
   }
 
   async function submit(event: FormEvent<HTMLFormElement>) {
@@ -98,7 +99,7 @@ export function AccountPage({ mode }: { mode: AccountMode }) {
   const needsPassword = ["login", "signup", "reset", "invite"].includes(mode);
   const fromMail = ["reset", "verify", "invite"].includes(mode);
   return <ProductPage title={accountModes[mode]} eyebrow="Educator workspace" className="account-page"
-    description={sampleFlow ? "The sample syllabus will open as soon as you’re signed in." : undefined}>
+    description={sampleFlow ? "The Stack and Queue lecture will open as soon as you’re signed in." : undefined}>
     {fromMail && !linkToken ? <p>Open the link from your email to continue.</p> :
       <form className="product-card product-form" onSubmit={submit}>
         {mode === "invite" && <p>Already signed in? Leave the sign-in fields empty to accept with your current account.</p>}
@@ -112,7 +113,7 @@ export function AccountPage({ mode }: { mode: AccountMode }) {
         </label>}
         {["signup", "reset"].includes(mode) && <p id="password-help">Use at least 12 characters.</p>}
         <Button type="submit" disabled={pending || signedIn}>{accountModes[mode]}</Button>
-        <ProductStatus error={error} message={pending ? signedIn ? "Opening the sample syllabus…" : "Working…" : message} />
+        <ProductStatus error={error} message={pending ? signedIn ? "Opening the sample lecture…" : "Working…" : message} />
         {signedIn && error && <a href="/workspace">Continue to your workspace</a>}
       </form>}
     <nav className="product-actions" aria-label="Account options">

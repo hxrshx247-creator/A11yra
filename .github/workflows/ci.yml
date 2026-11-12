@@ -84,6 +84,8 @@ jobs:
         with:
           node-version: "24"
       - run: docker compose up --build --wait
+        env:
+          VITE_SHOW_ADVANCED: "true"
       - name: Show API startup logs on failure
         if: failure()
         run: docker compose logs --no-color api

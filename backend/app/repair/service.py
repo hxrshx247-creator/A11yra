@@ -12,6 +12,7 @@ from app.repair.operations import (
     set_language,
     set_link_text,
     set_table_header,
+    set_heading,
     set_title,
 )
 
@@ -21,6 +22,7 @@ REPAIRS = {
     "set_alt_text": ("images", {"alt_text", "decorative"}, set_alt_text),
     "set_link_text": ("links", {"new_text"}, set_link_text),
     "set_table_header": ("tables", set(), set_table_header),
+    "set_heading": ("headings", {"heading_level"}, set_heading),
 }
 
 
@@ -35,7 +37,7 @@ def apply_fixes(document: WordDocument, audit: Audit, fixes: list[Fix]) -> FixRe
                 raise RepairRejected("This finding could not be found in the saved audit.")
             if finding.fixable != "teacher_approved":
                 raise RepairRejected("This finding is a recommendation to review in Word.")
-            if finding.status != "open":
+            if finding.status not in {"open", "needs_review"}:
                 raise RepairRejected("This finding is no longer open for a fix.")
             if finding.check_id != check_id:
                 raise RepairRejected("This repair type does not match the finding.")

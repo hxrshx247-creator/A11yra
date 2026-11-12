@@ -26,7 +26,7 @@ export function FindingCard({ finding, documentId, headingLevel = "h2" }: {
       {finding.fixable === "recommendation_only" && (
         <p className="finding-note"><Icon name="info" /> Recommendation only. Make changes in Word if needed.</p>
       )}
-      {documentId && finding.fixable === "teacher_approved" && finding.status === "open" && (
+      {documentId && finding.fixable === "teacher_approved" && ["open", "needs_review"].includes(finding.status) && (
         <ButtonLink className="finding-action" href={`/fix/${documentId}/${encodeURIComponent(finding.id)}`}>
           <span>Review fix</span><span className="visually-hidden"> for {finding.location}</span>
         </ButtonLink>

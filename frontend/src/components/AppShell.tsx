@@ -17,6 +17,7 @@ export function AppShell({ landing, publicPage, step, children }: {
   const openSettings = () => settings.current?.showModal();
   const brand = <a className="wordmark" href="/"><span className="brand-mark" aria-hidden="true" />A11yra</a>;
   const path = location.pathname;
+  const showAdvanced = import.meta.env.VITE_SHOW_ADVANCED === "true";
 
   return <>
     <a className="skip-link" href="#main">Skip to main content</a>
@@ -27,13 +28,13 @@ export function AppShell({ landing, publicPage, step, children }: {
           <a href={landing ? "#engine" : "/#engine"}>Engine</a>
           <a href={landing ? "#checks" : "/#checks"}>Checks</a>
           <a href={landing ? "#reader" : "/#reader"}>Reader</a>
-          <a href="/workspace">Workspace</a>
+          {showAdvanced && <a href="/workspace">Workspace</a>}
         </nav>
         <LandingControls />
       </div> : <nav className="site-nav" aria-label="Main">
         {brand}
         <div className="header-actions">
-          <a className="nav-upload" href="/workspace" aria-current={path === "/workspace" ? "page" : undefined}>Workspace</a>
+          {showAdvanced && <a className="nav-upload" href="/workspace" aria-current={path.startsWith("/workspace") ? "page" : undefined}>Workspace</a>}
           {step && step !== "Upload" && <a className="nav-upload" href="/upload">Upload another document</a>}
           <ThemeToggle />
           <Button variant="secondary" onClick={openSettings}><Icon name="settings" /> Settings</Button>
@@ -45,7 +46,7 @@ export function AppShell({ landing, publicPage, step, children }: {
     <footer className="site-footer">
       <span className="footer-name">A11yra</span>
       <nav className="product-footer-links" aria-label="About A11yra">
-        <a href="/pricing" aria-current={path === "/pricing" ? "page" : undefined}>Pricing</a>
+        {showAdvanced && <a href="/pricing" aria-current={path === "/pricing" ? "page" : undefined}>Pricing</a>}
         <a href="/security">Security &amp; privacy</a>
         <a href="/accessibility">Accessibility</a>
         <a href="/privacy">Privacy policy</a>

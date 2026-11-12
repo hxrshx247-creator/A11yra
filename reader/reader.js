@@ -76,6 +76,7 @@
   }
 
   const settingsKey = "a11yra-reader-settings-v1";
+  const preset = document.querySelector("#reader-preset");
   const root = document.documentElement;
   const selects = {
     size: document.querySelector("#text-size"),
@@ -96,6 +97,11 @@
   try { saved = JSON.parse(localStorage.getItem(settingsKey)) || {}; } catch { /* Storage is optional. */ }
   let motionChoice = saved.motion === "full" ? "full"
     : saved.motion === "off" || saved.motion === "reduced" ? "off" : null;
+  const presets = {
+    "low-vision": { size: "175", spacing: "wide", theme: "contrast", font: "standard", ruler: false },
+    dyslexia: { size: "125", spacing: "roomy", theme: "light", font: "spaced", ruler: false },
+    focus: { size: "125", spacing: "roomy", theme: "light", font: "standard", ruler: true },
+  };
 
   function positionRuler() {
     ruler.style.setProperty("--ruler-position", rulerPosition.value + "%");
@@ -110,7 +116,7 @@
   });
 
   function applySettings() {
-    const settings = { shortcuts: shortcuts.checked, motion: motionChoice, ruler: rulerEnabled.checked };
+    const settings = { shortcuts: shortcuts.checked, motion: motionChoice, ruler: rulerEnabled.checked, preset: preset.value };
     const motionMode = motionChoice ?? (motionMedia.matches ? "off" : "full");
     root.dataset.motion = motionMode;
     motion.value = motionMode;
@@ -121,6 +127,7 @@
       root.dataset[key] = select.value;
       settings[key] = select.value;
     }
+    root.dataset.preset = preset.value;
     try { localStorage.setItem(settingsKey, JSON.stringify(settings)); } catch { /* Settings still work in this tab. */ }
   }
 
@@ -128,12 +135,28 @@
     if (Array.from(select.options).some((option) => option.value === saved[key])) {
       select.value = saved[key];
     }
-    select.addEventListener("change", applySettings);
+    select.addEventListener("change", () => { preset.value = "custom"; applySettings(); });
   }
+  if (["custom", ...Object.keys(presets)].includes(saved.preset)) preset.value = saved.preset;
+  if (preset.value !== "custom") {
+    const values = presets[preset.value];
+    Object.entries(values).forEach(([key, value]) => {
+      if (key === "ruler") rulerEnabled.checked = value;
+      else selects[key].value = value;
+    });
+  }
+  preset.addEventListener("change", () => {
+    const values = presets[preset.value];
+    if (values) Object.entries(values).forEach(([key, value]) => {
+      if (key === "ruler") rulerEnabled.checked = value;
+      else selects[key].value = value;
+    });
+    applySettings();
+  });
   shortcuts.checked = saved.shortcuts !== false;
   shortcuts.addEventListener("change", applySettings);
   rulerEnabled.checked = saved.ruler === true;
-  rulerEnabled.addEventListener("change", applySettings);
+  rulerEnabled.addEventListener("change", () => { preset.value = "custom"; applySettings(); });
   motion.addEventListener("change", () => {
     motionChoice = motion.value;
     applySettings();
@@ -145,6 +168,7 @@
     rulerEnabled.checked = false;
     rulerPosition.value = rulerPosition.defaultValue;
     motionChoice = null;
+    preset.value = "custom";
     applySettings();
   });
   applySettings();

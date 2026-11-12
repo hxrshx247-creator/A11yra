@@ -3,7 +3,7 @@ export type CheckResult = "passed" | "issues" | "needs_review" | "not_evaluated"
 export type Severity = "high" | "medium" | "low";
 export type Confidence = "high" | "medium" | "low";
 export type FindingStatus = "open" | "fixed_unverified" | "verified_fixed" | "needs_review";
-export type FixType = "set_title" | "set_language" | "set_alt_text" | "set_link_text" | "set_table_header";
+export type FixType = "set_title" | "set_language" | "set_alt_text" | "set_link_text" | "set_table_header" | "set_heading";
 
 export interface Finding {
   id: string;
@@ -40,7 +40,7 @@ export interface Audit {
 export interface Fix {
   finding_id: string;
   type: FixType;
-  payload: { title?: string; lang?: string; alt_text?: string; decorative?: boolean; new_text?: string };
+  payload: { title?: string; lang?: string; alt_text?: string; decorative?: boolean; new_text?: string; heading_level?: number };
 }
 
 export interface FixResponse {
@@ -67,3 +67,5 @@ export interface UploadResponse {
   filename: string;
   audit: Audit;
 }
+
+export interface ReaderPreview { version: "original" | "repaired"; items: { type: string; text: string; issue?: string | null; finding_id?: string | null }[] }

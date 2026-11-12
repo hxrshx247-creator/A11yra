@@ -1,8 +1,9 @@
 import { PageHeading } from "../components/PageHeading";
 import { useState } from "react";
+import { dismissHeadingCandidate } from "../api/client";
 import { FindingCard } from "../components/FindingCard";
 import { FixForm, FIX_TYPES } from "../components/FixForm";
-import { ButtonLink } from "../components/Button";
+import { Button, ButtonLink } from "../components/Button";
 import { Icon } from "../components/Icon";
 import { useAudit } from "../hooks/useAudit";
 import { usePageHeading } from "../hooks/usePageHeading";
@@ -13,10 +14,11 @@ export function FixPage({ documentId, findingId }: { documentId: string; finding
   const heading = usePageHeading("Review fix");
   const { workspace } = useWorkspace();
   const [applied, setApplied] = useState(false);
+  const [dismissError, setDismissError] = useState("");
   const finding = audit?.findings.find((item) => item.id === findingId);
   const shownFinding = finding && applied ? { ...finding, status: "fixed_unverified" as const } : finding;
   const type = finding && FIX_TYPES[finding.check_id];
-  const canFix = workspace.role !== "viewer" && shownFinding?.status === "open" && shownFinding.fixable === "teacher_approved";
+  const canFix = workspace.role !== "viewer" && (shownFinding?.status === "open" || shownFinding?.status === "needs_review") && shownFinding.fixable === "teacher_approved";
   const back = `/audit/${documentId}${finding ? `?check=${finding.check_id}` : ""}`;
   const message = error || (!audit ? "Loading finding…" : !finding ? "This finding could not be found." : "");
 
@@ -40,6 +42,12 @@ export function FixPage({ documentId, findingId }: { documentId: string; finding
           )}
         </div>
       )}
+      {finding?.id.startsWith("heading-lookalike-") && finding.status === "needs_review" && workspace.role !== "viewer" &&
+        <Button className="finding-action" variant="secondary" onClick={async () => {
+          try { await dismissHeadingCandidate(documentId, finding.id); location.assign(back); }
+          catch (reason) { setDismissError(reason instanceof Error ? reason.message : "The decision could not be saved."); }
+        }}>Not a heading</Button>}
+      {dismissError && <p role="alert" className="form-error">{dismissError}</p>}
       {applied && <ButtonLink className="finding-action" href={`/compare/${documentId}`}>Re-audit to verify</ButtonLink>}
     </main>
   );

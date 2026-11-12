@@ -1,4 +1,4 @@
-import type { Audit, Fix, FixResponse, ReauditResponse, UploadResponse } from "../types/contract";
+import type { Audit, Fix, FixResponse, ReaderPreview, ReauditResponse, UploadResponse } from "../types/contract";
 
 export class ApiError extends Error {
   constructor(message: string, readonly status: number) {
@@ -96,14 +96,19 @@ export async function uploadDocument(file: File): Promise<UploadResponse> {
   return readJson(response, "The server could not upload the file. Try again.");
 }
 
-export async function uploadSample(): Promise<UploadResponse> {
-  const response = await apiFetch("/api/documents/sample", { method: "POST", headers: workspaceHeaders() });
-  return readJson(response, "The sample syllabus could not be opened.");
+export async function uploadSample(kind: "syllabus" | "lecture" | "messy" = "syllabus"): Promise<UploadResponse> {
+  const response = await apiFetch(`/api/documents/sample?kind=${kind}`, { method: "POST", headers: workspaceHeaders() });
+  return readJson(response, "The sample document could not be opened.");
 }
 
 export async function getAudit(documentId: string, signal: AbortSignal): Promise<Audit> {
   const response = await apiFetch(`/api/documents/${encodeURIComponent(documentId)}/audit`, { signal });
   return readJson(response, "The server could not open this audit. Try again.");
+}
+
+export async function getReaderPreview(documentId: string, version: "original" | "repaired", signal: AbortSignal): Promise<ReaderPreview> {
+  const response = await apiFetch(`/api/documents/${encodeURIComponent(documentId)}/reader-preview?version=${version}`, { signal });
+  return readJson(response, "The screen reader preview could not be loaded.");
 }
 
 export async function submitFix(documentId: string, fix: Fix): Promise<FixResponse> {
@@ -113,6 +118,10 @@ export async function submitFix(documentId: string, fix: Fix): Promise<FixRespon
     body: JSON.stringify({ fixes: [fix] }),
   });
   return readJson(response, "The server could not apply this fix. Try again.");
+}
+
+export async function dismissHeadingCandidate(documentId: string, findingId: string): Promise<void> {
+  await productRequest(`/api/documents/${encodeURIComponent(documentId)}/findings/${encodeURIComponent(findingId)}/dismiss`, "POST");
 }
 
 export async function runReaudit(documentId: string): Promise<ReauditResponse> {

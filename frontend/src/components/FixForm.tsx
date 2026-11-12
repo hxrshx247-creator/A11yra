@@ -6,6 +6,7 @@ import { Button } from "./Button";
 import { Icon } from "./Icon";
 
 export const FIX_TYPES: Partial<Record<CheckId, FixType>> = {
+  headings: "set_heading",
   title: "set_title",
   language: "set_language",
   images: "set_alt_text",
@@ -45,6 +46,7 @@ export function FixForm({ documentId, finding, type, onApplied }: {
     if (type === "set_alt_text") payload = decorative
       ? { decorative: true }
       : { alt_text: String(data.get("alt_text") ?? "").trim() };
+    if (type === "set_heading") payload = { heading_level: Number(data.get("heading_level")) };
 
     setError("");
     setPending(true);
@@ -82,11 +84,18 @@ export function FixForm({ documentId, finding, type, onApplied }: {
           <p id="repair-help">Use the location to inspect the picture in the original DOCX. Choose decorative when the picture adds no information.</p>
           <div className="repair-textarea" hidden={decorative}>
             <label htmlFor="repair-alt">Alt text (required)</label>
-            <textarea id="repair-alt" name="alt_text" rows={4} required={!decorative}
+            <textarea id="repair-alt" name="alt_text" rows={4} required={!decorative} defaultValue={finding.preview ?? ""}
               disabled={decorative} aria-describedby={describedBy} aria-invalid={error ? true : undefined} />
           </div>
         </>
       )}
+      {type === "set_heading" && <>
+        <p id="repair-help">Preview in context: “{finding.preview ?? finding.evidence}” Choose the correct outline level before applying.</p>
+        <label htmlFor="heading-level">Convert to heading level</label>
+        <select id="heading-level" name="heading_level" defaultValue={/Heading ([1-6])/.exec(finding.suggestion)?.[1] ?? "2"}>
+          {[1, 2, 3, 4, 5, 6].map((level) => <option key={level} value={level}>Heading {level}</option>)}
+        </select>
+      </>}
       {type === "set_table_header" && (
         <>
           <p id="repair-help">Check the table in Word to confirm that its first row names the columns.</p>

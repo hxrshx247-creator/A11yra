@@ -75,7 +75,7 @@ export function ExportPage({ documentId }: { documentId: string }) {
         <>
           <div className="product-actions">
             <a className="back-to-upload" href={`/audit/${documentId}`}>Back to audit</a>
-            <a href="/workspace">Back to workspace</a>
+            {import.meta.env.VITE_SHOW_ADVANCED === "true" && <a href="/workspace">Back to workspace</a>}
           </div>
           <div className="export-grid">
             <section className="workflow-card" aria-labelledby="export-format">
@@ -124,7 +124,7 @@ export function ExportPage({ documentId }: { documentId: string }) {
         </p>
       </div>
       {loadError && <a className="action-link" href="/upload">Return to upload</a>}
-      {finished === "deleted" && <ButtonLink href="/workspace">Back to workspace</ButtonLink>}
+      {finished === "deleted" && <ButtonLink href={import.meta.env.VITE_SHOW_ADVANCED === "true" ? "/workspace" : "/upload"}>{import.meta.env.VITE_SHOW_ADVANCED === "true" ? "Back to workspace" : "Upload another document"}</ButtonLink>}
     </main>
   );
 }

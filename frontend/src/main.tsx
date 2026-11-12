@@ -33,17 +33,18 @@ const workspace = /^\/workspace(?:\/(dashboard|activity|members|keys))?$/.exec(p
 const history = /^\/history\/([0-9a-f-]{36})$/i.exec(path);
 const isWorkflow = Boolean(exportRoute || fixRoute || compareRoute || auditRoute || path === "/upload");
 const isPublic = isLanding || Boolean(account) || path === "/pricing" || Object.hasOwn(publicRoutes, path);
+const showAdvanced = import.meta.env.VITE_SHOW_ADVANCED === "true";
 const step = exportRoute ? "Export" : compareRoute ? "Re-audit" : fixRoute ? "Fix" : auditRoute ? "Audit" : "Upload";
 if (isLanding) document.title = "A11yra | Accessible learning, end to end";
 
 function App() {
   if (isLanding) return <Landing />;
   if (account) return <AccountPage mode={account[1] as AccountMode} />;
-  if (path === "/pricing") return <Pricing />;
+  if (path === "/pricing" && showAdvanced) return <Pricing />;
   if (Object.hasOwn(publicRoutes, path)) return <PublicPage route={path as PublicRoute} />;
-  if (path === "/account/settings") return <WorkspaceGate><AccountSettings /></WorkspaceGate>;
-  if (workspace) return <WorkspaceGate><WorkspacePage section={(workspace[1] ?? "documents") as WorkspaceSection} /></WorkspaceGate>;
-  if (history) return <WorkspaceGate><DocumentHistory id={history[1]} /></WorkspaceGate>;
+  if (showAdvanced && path === "/account/settings") return <WorkspaceGate><AccountSettings /></WorkspaceGate>;
+  if (showAdvanced && workspace) return <WorkspaceGate><WorkspacePage section={(workspace[1] ?? "documents") as WorkspaceSection} /></WorkspaceGate>;
+  if (showAdvanced && history) return <WorkspaceGate><DocumentHistory id={history[1]} /></WorkspaceGate>;
   if (isWorkflow) return <WorkspaceGate>
     {exportRoute ? <ExportPage documentId={exportRoute[1]} />
       : fixRoute ? <FixPage documentId={fixRoute[1]} findingId={fixRoute[2]} />
