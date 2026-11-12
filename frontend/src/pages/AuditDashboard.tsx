@@ -77,7 +77,8 @@ export function AuditDashboard({ documentId }: { documentId: string }) {
             <p className="preview-caveat">Approximation of linear screen reader output; real behavior varies by software.</p>
             {previewError && <p role="status">{previewError}</p>}
             {!preview && !previewError && <p role="status">Loading preview…</p>}
-            {preview && <ol role="list" className="reader-preview-list">{preview.items.map((item, index) => {
+            {preview && <ol role="list" className="reader-preview-list" tabIndex={0}
+              aria-label={version === "original" ? "Original document preview" : "Repaired document preview"}>{preview.items.map((item, index) => {
               const finding = item.finding_id && audit.findings.find((row) => row.id === item.finding_id);
               return <li key={`${item.type}-${index}`}>
                 <span className="preview-item-text">{item.text}</span>

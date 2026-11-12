@@ -58,6 +58,10 @@ test("signup, four verified repairs, public reader, workspace and public pages",
     await page.getByRole("heading", { name: "Screen reader view" }).waitFor();
     await page.getByRole("button", { name: "Repaired" }).waitFor();
     assert.doesNotMatch(await page.locator(".reader-preview-list").innerText(), /Image: no description|Link: click here|Document title: none|Language: not set/);
+    await page.getByRole("button", { name: "Repaired" }).press("Tab");
+    assert.equal(await page.getByRole("list", { name: "Repaired document preview" }).evaluate(
+      (list) => document.activeElement === list && list.matches(":focus-visible"),
+    ), true);
     await scan(page);
     await page.getByRole("link", { name: "Export document" }).press("Enter");
     await page.getByRole("button", { name: "Publish reader link" }).click();
