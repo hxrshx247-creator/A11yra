@@ -100,6 +100,8 @@ export function AccountPage({ mode }: { mode: AccountMode }) {
   const fromMail = ["reset", "verify", "invite"].includes(mode);
   return <ProductPage title={accountModes[mode]} eyebrow="Educator workspace" className="account-page"
     description={sampleFlow ? "The Stack and Queue lecture will open as soon as you’re signed in." : undefined}>
+    {mode === "signup" && import.meta.env.VITE_TEMPORARY_DEMO === "true" &&
+      <p>Use a made-up address like judge@example.test and a new password. The temporary demo does not send email.</p>}
     {fromMail && !linkToken ? <p>Open the link from your email to continue.</p> :
       <form className="product-card product-form" onSubmit={submit}>
         {mode === "invite" && <p>Already signed in? Leave the sign-in fields empty to accept with your current account.</p>}
@@ -118,7 +120,7 @@ export function AccountPage({ mode }: { mode: AccountMode }) {
       </form>}
     <nav className="product-actions" aria-label="Account options">
       {mode !== "login" && <a href={`/account/login?${next}`}>Sign in</a>}
-      {mode === "login" && <a href={`/account/forgot?${next}`}>Forgot your password?</a>}
+      {mode === "login" && import.meta.env.VITE_TEMPORARY_DEMO !== "true" && <a href={`/account/forgot?${next}`}>Forgot your password?</a>}
       {mode !== "signup" && <a href={`/account/signup?${next}`}>Create an account</a>}
     </nav>
   </ProductPage>;

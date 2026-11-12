@@ -106,6 +106,8 @@ def send_mail(request, email, subject, content):
 
 
 def schedule_link(db, request, tasks, user, purpose):
+    if request.app.state.mailer.disabled:
+        return
     raw = token()
     hours = 1 if purpose == "reset" else 24
     db.add(AccountToken(
@@ -139,6 +141,8 @@ def signup(body: Credentials, request: Request, tasks: BackgroundTasks, db=Depen
         raise ApiError(422, "password_length", "Use at least 12 characters for your password.")
     user = User(email=body.email, password_hash=hasher.hash(body.password))
     result = {"message": "If this email can be registered, check your inbox for a verification link. You can sign in now."}
+    if request.app.state.mailer.disabled:
+        result = {"message": "You can sign in now. This temporary demo does not send email."}
     try:
         db.add(user)
         db.flush()

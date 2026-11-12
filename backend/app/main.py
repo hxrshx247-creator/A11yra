@@ -18,6 +18,7 @@ from fastapi.openapi.docs import get_swagger_ui_html
 from sqlalchemy.exc import SQLAlchemyError
 from starlette.exceptions import HTTPException
 from starlette.middleware.cors import CORSMiddleware
+from starlette.staticfiles import StaticFiles
 
 from app.api.routes import apply_document_fixes, router
 from app.core.config import SESSION_SWEEP_SECONDS
@@ -34,8 +35,14 @@ from app.product.security import RateLimiter, app_secret
 DEFAULT_ORIGINS = "http://127.0.0.1:5173,http://localhost:5173"
 
 
+def public_url():
+    render_url = os.getenv("RENDER_EXTERNAL_URL") if os.getenv("A11YRA_ENV") == "demo" else None
+    return os.getenv("A11YRA_PUBLIC_URL", render_url or "http://127.0.0.1:5173").rstrip("/")
+
+
 def allowed_origins():
-    defaults = DEFAULT_ORIGINS if os.getenv("A11YRA_ENV", "dev") == "dev" else ""
+    environment = os.getenv("A11YRA_ENV", "dev")
+    defaults = {"dev": DEFAULT_ORIGINS, "demo": public_url()}.get(environment, "")
     return [origin.strip().rstrip("/") for origin in os.getenv("A11YRA_CORS_ORIGINS", defaults).split(",")
             if origin.strip()]
 
@@ -70,7 +77,7 @@ async def lifespan(app: FastAPI):
         state.logger.addHandler(logging.StreamHandler())
     state.logger.propagate = False
     state.origins = set(allowed_origins())
-    state.public_url = os.getenv("A11YRA_PUBLIC_URL", "http://127.0.0.1:5173").rstrip("/")
+    state.public_url = public_url()
     if environment != "dev" and (not state.public_url.startswith("https://") or state.public_url not in state.origins):
         raise RuntimeError("Set an HTTPS A11YRA_PUBLIC_URL and include it in A11YRA_CORS_ORIGINS.")
     state.secure_cookies = environment != "dev" or state.public_url.startswith("https://")
@@ -189,3 +196,19 @@ async def handle_http_error(_request: Request, error: HTTPException):
     response = ApiError(error.status_code, code, message).response()
     response.headers.update(error.headers or {})
     return response
+
+
+class FrontendFiles(StaticFiles):
+    async def get_response(self, path, scope):
+        if Path(path).parts[:1] in {("api",), ("r",)}:
+            raise HTTPException(404)
+        try:
+            return await super().get_response(path, scope)
+        except HTTPException as error:
+            if error.status_code != 404 or Path(path).suffix:
+                raise
+            return await super().get_response("index.html", scope)
+
+
+if frontend_dir := os.getenv("A11YRA_FRONTEND_DIR"):
+    app.mount("/", FrontendFiles(directory=frontend_dir, html=True), name="frontend")

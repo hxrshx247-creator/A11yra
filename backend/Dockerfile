@@ -1,4 +1,13 @@
-FROM python:3.12-slim
+FROM node:24-alpine AS frontend
+WORKDIR /app/frontend
+COPY frontend/package*.json ./
+RUN npm ci
+COPY frontend/ ./
+COPY backend/app/product/plan_prices.json /app/backend/app/product/plan_prices.json
+ENV VITE_TEMPORARY_DEMO=true
+RUN npm run build
+
+FROM python:3.12-slim AS api
 ENV PYTHONUNBUFFERED=1 PYTHONDONTWRITEBYTECODE=1 PORT=8000
 WORKDIR /app
 COPY backend/requirements.txt backend/requirements.txt
@@ -11,3 +20,7 @@ RUN useradd --system --uid 10001 a11yra \
 USER a11yra
 WORKDIR /app/backend
 CMD ["sh", "-c", "alembic upgrade head && exec uvicorn app.main:app --host 0.0.0.0 --port \"$PORT\" --workers 1 --no-access-log"]
+
+FROM api AS demo
+COPY --from=frontend /app/frontend/dist /app/frontend/dist
+ENV A11YRA_FRONTEND_DIR=/app/frontend/dist

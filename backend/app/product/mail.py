@@ -8,10 +8,13 @@ class Mailer:
     def __init__(self, environment: str):
         self.host = os.getenv("SMTP_HOST")
         self.sender = os.getenv("SMTP_FROM")
-        if environment != "dev" and not (self.host and self.sender):
+        self.disabled = environment == "demo" and not self.host
+        if environment != "dev" and not self.disabled and not (self.host and self.sender):
             raise RuntimeError("Set SMTP_HOST and SMTP_FROM outside development.")
 
     def send(self, recipient: str, subject: str, content: str):
+        if self.disabled:
+            return
         if not self.host:
             print(f"[development mail] To: {recipient}\n{subject}\n{content}", flush=True)
             return

@@ -19,6 +19,8 @@ For an HTTPS deployment, serve the built frontend and route `/api/*` and `/r/*` 
 
 ### Free-tier preview
 
+For the temporary judges’ demo, create one Free Render Docker web service from the repository root with `backend/Dockerfile` and health path `/api/ready`. Set `A11YRA_ENV=demo` and generate `A11YRA_SECRET` in Render. The image serves the frontend and API on the same HTTPS origin and uses Render’s public URL for sign-in. SQLite and uploads use the temporary service filesystem. Email delivery is disabled by default in this mode. Use fictional addresses and the bundled samples. After a restart, create a new demo account if the old one has been cleared.
+
 Create a Render Docker web service from the repo root with `backend/Dockerfile` and `/api/ready` as the health path. Provision a separate free Postgres database. The Docker entrypoint migrates the database before startup. Deploy the frontend on a static host that can proxy both API and learner paths without rewriting response cookies, and set the public URL to that frontend origin. Configure a test SMTP server on an allowed STARTTLS port. A private local demo is the simplest alternative for exercising verification links printed to the development console.
 
 Use synthetic files on Render’s free tier. Restarts clear the free web service’s filesystem, free Postgres expires after 30 days, and common SMTP ports are restricted. A persistent file volume and durable database are required for a real pilot. [Render free-tier limits](https://render.com/docs/free), [Render web service setup](https://render.com/docs/web-services)

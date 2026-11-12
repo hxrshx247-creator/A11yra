@@ -90,6 +90,7 @@ export function Landing() {
           <span className="landing-hero-line">every reader.</span>
         </h1>
         <p className="landing-hero-description">Audit and repair educational Word documents, then share them in a reading space that students can adjust to suit them.</p>
+        {import.meta.env.VITE_TEMPORARY_DEMO === "true" && <p>Temporary judges’ demo. Use the sample or a fictional document. Accounts and uploads can reset when the demo goes idle.</p>}
         <div className="product-actions">
           <ButtonLink href="/upload">Upload a document</ButtonLink>
           <ButtonLink variant="secondary" href="/account/signup?sample=1">Try a sample audit</ButtonLink>
