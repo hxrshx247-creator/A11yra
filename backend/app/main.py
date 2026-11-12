@@ -71,6 +71,7 @@ def set_up_database(engine, environment):
 async def lifespan(app: FastAPI):
     state = app.state
     environment = os.getenv("A11YRA_ENV", "dev")
+    state.demo_mode = environment == "demo"
     state.logger = logging.getLogger("a11yra")
     state.logger.setLevel(logging.INFO)
     if not state.logger.handlers:

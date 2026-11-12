@@ -57,6 +57,17 @@ def personal_workspace(db, user_id):
     return db.scalar(select(Workspace.id).where(Workspace.personal_owner_id == user_id))
 
 
+def create_personal_workspace(db, user):
+    db.add(user)
+    db.flush()
+    workspace = Workspace(name="Personal workspace", personal_owner_id=user.id)
+    db.add(workspace)
+    db.flush()
+    db.add_all([Membership(workspace_id=workspace.id, user_id=user.id, role="owner"),
+                Subscription(workspace_id=workspace.id)])
+    return workspace
+
+
 def profile(db, user):
     memberships = db.execute(
         select(Workspace, Membership.role)
@@ -144,15 +155,7 @@ def signup(body: Credentials, request: Request, tasks: BackgroundTasks, db=Depen
     if request.app.state.mailer.disabled:
         result = {"message": "You can sign in now. This temporary demo does not send email."}
     try:
-        db.add(user)
-        db.flush()
-        workspace = Workspace(name="Personal workspace", personal_owner_id=user.id)
-        db.add(workspace)
-        db.flush()
-        db.add_all([
-            Membership(workspace_id=workspace.id, user_id=user.id, role="owner"),
-            Subscription(workspace_id=workspace.id),
-        ])
+        workspace = create_personal_workspace(db, user)
         log_event(db, "signup", "account", request=request, workspace=workspace.id, actor=user.id, target=user.id)
         schedule_link(db, request, tasks, user, "verify")
         db.commit()
@@ -190,6 +193,32 @@ def login(body: Credentials, request: Request, response: Response, db=Depends(ge
 @router.get("/me")
 def me(request: Request, db=Depends(get_db)):
     return profile(db, signed_in(request, db))
+
+
+@router.post("/demo-session")
+def demo_session(request: Request, response: Response, db=Depends(get_db)):
+    if not request.app.state.demo_mode:
+        raise ApiError(404, "route_not_found", "This page or endpoint could not be found.")
+    validate_csrf(request)
+    try:
+        return profile(db, signed_in(request, db))
+    except ApiError as error:
+        if error.status != 401:
+            raise
+    try:
+        session = current_session(request, db, refresh=True)
+    except ApiError as error:
+        if error.status != 401:
+            raise
+    else:
+        refresh(request, response, db)
+        return profile(db, db.get(User, session.user_id))
+
+    request.app.state.auth_limits.hit(("demo_session", request.client.host), 30, 3600)
+    user = User(email=f"guest-{token().lower()}@demo.invalid", password_hash=DUMMY_HASH)
+    create_personal_workspace(db, user)
+    open_session(db, request, response, user)
+    return profile(db, user)
 
 
 @router.post("/refresh", status_code=204)

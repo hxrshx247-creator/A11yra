@@ -1,6 +1,11 @@
 import { useLayoutEffect, useState } from "react";
-import { ButtonLink } from "../components/Button";
+import { productRequest, selectWorkspace, uploadSample } from "../api/client";
+import { Button, ButtonLink } from "../components/Button";
 import { Icon } from "../components/Icon";
+import { errorMessage } from "../hooks/useProduct";
+import type { Profile } from "../types/product";
+
+const temporaryDemo = import.meta.env.VITE_TEMPORARY_DEMO === "true";
 
 const STEPS = [
   ["Upload", "Drop in a Word document. You choose when to share it."],
@@ -70,6 +75,25 @@ function RevealWords({ text }: { text: string }) {
 }
 
 export function Landing() {
+  const [openingSample, setOpeningSample] = useState(false);
+  const [sampleError, setSampleError] = useState("");
+
+  async function openSample() {
+    if (openingSample) return;
+    setOpeningSample(true);
+    setSampleError("");
+    try {
+      const profile = await productRequest<Profile>("/api/auth/demo-session", "POST");
+      const workspace = profile.workspaces.find((item) => item.personal);
+      if (workspace) selectWorkspace(workspace.id);
+      const result = await uploadSample("lecture");
+      location.assign(`/audit/${encodeURIComponent(result.document_id)}?sample=lecture`);
+    } catch (error) {
+      setSampleError(errorMessage(error));
+      setOpeningSample(false);
+    }
+  }
+
   useLayoutEffect(() => {
     const sectionId = window.location.hash.slice(1);
     if (["engine", "checks", "reader"].includes(sectionId)) {
@@ -90,11 +114,15 @@ export function Landing() {
           <span className="landing-hero-line">every reader.</span>
         </h1>
         <p className="landing-hero-description">Audit and repair educational Word documents, then share them in a reading space that students can adjust to suit them.</p>
-        {import.meta.env.VITE_TEMPORARY_DEMO === "true" && <p>Temporary judges’ demo. Use the sample or a fictional document. Accounts and uploads can reset when the demo goes idle.</p>}
+        {temporaryDemo && <p>Temporary judges’ demo. Use the sample or a fictional document. Sessions and uploads can reset when the demo goes idle.</p>}
         <div className="product-actions">
           <ButtonLink href="/upload">Upload a document</ButtonLink>
-          <ButtonLink variant="secondary" href="/account/signup?sample=1">Try a sample audit</ButtonLink>
+          {temporaryDemo
+            ? <Button variant="secondary" disabled={openingSample} onClick={() => void openSample()}>Try a sample audit</Button>
+            : <ButtonLink variant="secondary" href="/account/signup?sample=1">Try a sample audit</ButtonLink>}
         </div>
+        {openingSample && <p role="status">Opening the sample audit…</p>}
+        {sampleError && <p role="alert">{sampleError}</p>}
       </div>
     </section>
     <section className="landing-alt" id="engine" aria-labelledby="engine-heading" tabIndex={-1}>
