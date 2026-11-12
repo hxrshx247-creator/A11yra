@@ -1,0 +1,13 @@
+{
+  "name": "a11yra-reader-tests",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test test-reader.mjs",
+    "test:teacher": "node --test test-teacher-ui.mjs"
+  },
+  "devDependencies": {
+    "axe-core": "^4.10.3",
+    "playwright-core": "^1.56.0"
+  }
+}

@@ -1,0 +1,57 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: a11yra
+      POSTGRES_USER: a11yra
+      POSTGRES_PASSWORD: ${A11YRA_LOCAL_POSTGRES_PASSWORD:-a11yra-local-only}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U a11yra -d a11yra"]
+      interval: 3s
+      timeout: 3s
+      retries: 10
+  api:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      A11YRA_ENV: dev
+      A11YRA_PUBLIC_URL: http://127.0.0.1:5173
+      DATABASE_URL: postgresql+psycopg://a11yra:${A11YRA_LOCAL_POSTGRES_PASSWORD:-a11yra-local-only}@postgres/a11yra
+      A11YRA_DATA_DIR: /app/backend/.a11yra-data
+      FORWARDED_ALLOW_IPS: "*"
+    volumes:
+      - product_files:/app/backend/.a11yra-data
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/ready', timeout=3)"]
+      interval: 5s
+      timeout: 4s
+      retries: 10
+  web:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+      args:
+        SUPPORT_EMAIL: ${SUPPORT_EMAIL:-}
+    ports:
+      - "127.0.0.1:5173:8080"
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:8080/api/ready"]
+      interval: 5s
+      timeout: 4s
+      retries: 10
+
+volumes:
+  postgres_data:
+  product_files:

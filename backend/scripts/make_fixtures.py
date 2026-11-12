@@ -102,9 +102,43 @@ def make_fixtures(output_dir: Path) -> tuple[Path, Path]:
     return broken, clean
 
 
+def make_syllabus(output_dir: Path, *, pilot: bool = False) -> Path:
+    """Build the demo handout with one deliberate image-description finding."""
+    output_dir.mkdir(parents=True, exist_ok=True)
+    document = Document()
+    document.core_properties.title = "" if pilot else "Study Group Syllabus"
+    language = document.styles.element.find(
+        "w:docDefaults/w:rPrDefault/w:rPr/w:lang", namespaces=nsmap
+    )
+    if pilot:
+        language.getparent().remove(language)
+    else:
+        language.set(qn("w:val"), "en-US")
+    document.add_heading("Study Group Syllabus", level=1)
+    document.add_paragraph("This handout covers a two-session study group for first-year students.")
+    document.add_heading("Attendance example", level=2)
+    document.add_paragraph("Use the chart to compare attendance across the two study sessions.")
+    document.add_picture(attendance_chart(), width=Inches(3.75))
+    document.add_heading("Schedule and rooms", level=2)
+    schedule = document.add_paragraph("Find updates in the ")
+    add_link(schedule, "click here" if pilot else "weekly study group schedule")
+    table = document.add_table(rows=3, cols=2)
+    table.style = "Table Grid"
+    caption = OxmlElement("w:tblCaption")
+    caption.set(qn("w:val"), "Study sessions and rooms")
+    table._tbl.tblPr.append(caption)
+    table.rows[0]._tr.get_or_add_trPr().append(OxmlElement("w:tblHeader"))
+    for row, (day, room) in zip(table.rows, [("Day", "Room"), ("Monday", "201"), ("Thursday", "103")]):
+        row.cells[0].text = day
+        row.cells[1].text = room
+    path = output_dir / ("pilot-syllabus.docx" if pilot else "syllabus.docx")
+    document.save(path)
+    return path
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output-dir", type=Path, default=FIXTURE_DIR)
     args = parser.parse_args()
-    for path in make_fixtures(args.output_dir):
+    for path in (*make_fixtures(args.output_dir), make_syllabus(args.output_dir), make_syllabus(args.output_dir, pilot=True)):
         print(f"Created {path}")

@@ -1,6 +1,15 @@
 __pycache__/
 .pytest_cache/
+.ruff_cache/
 .venv/
 node_modules/
 dist/
 *.tsbuildinfo
+.env
+backend/*.db*
+backend/.a11yra-data/
+playwright-report/
+test-results/
+/backend.zip
+/frontend.zip
+/frontend/src.zip

@@ -1,4 +1,5 @@
 import type { Audit, ReauditResponse } from "../types/contract";
+import { StatusBadge } from "./StatusBadge";
 
 function ProgressSummary({ title, progress }: { title: string; progress: Audit["progress"] }) {
   return (
@@ -17,11 +18,12 @@ function ProgressSummary({ title, progress }: { title: string; progress: Audit["
 export function BeforeAfterPanel({ result }: { result: ReauditResponse }) {
   const { audit, diff } = result;
   const groups = [
-    { label: "Verified fixed", ids: diff.verified_fixed },
-    { label: "Still open", ids: diff.still_open },
-    { label: "Needs review", ids: diff.needs_review },
-    { label: "New findings", ids: diff.new_findings },
-  ];
+    { status: "verified_fixed", ids: diff.verified_fixed },
+    { status: "still_open", ids: diff.still_open },
+    { status: "needs_review", ids: diff.needs_review },
+    { status: "new", ids: diff.new_findings },
+  ] as const;
+  const change = diff.progress_after.passed - diff.progress_before.passed;
   const findings = new Map(audit.findings.map((finding) => [finding.id, finding]));
   const labels = new Map(audit.checks.map((check) => [check.id, check.label]));
 
@@ -29,6 +31,8 @@ export function BeforeAfterPanel({ result }: { result: ReauditResponse }) {
     <>
       <section aria-labelledby="compare-progress">
         <h2 id="compare-progress">Audit progress</h2>
+        <p className="progress-delta">{change === 0 ? "No change in checks passed."
+          : `${change > 0 ? "+" : "−"}${Math.abs(change)} ${Math.abs(change) === 1 ? "check" : "checks"} passed`}</p>
         <div className="compare-grid">
           <ProgressSummary title="Before re-audit" progress={diff.progress_before} />
           <ProgressSummary title="After re-audit" progress={diff.progress_after} />
@@ -37,9 +41,9 @@ export function BeforeAfterPanel({ result }: { result: ReauditResponse }) {
       <section aria-labelledby="compare-changes">
         <h2 id="compare-changes">Changes in findings</h2>
         <div className="compare-grid">
-          {groups.map(({ label, ids }) => (
-            <section key={label} className="compare-card">
-              <h3>{label} ({ids.length})</h3>
+          {groups.map(({ status, ids }) => (
+            <section key={status} className="compare-card">
+              <h3><StatusBadge status={status} count={ids.length} /></h3>
               {ids.length === 0 ? <p>None</p> : (
                 <ul>
                   {ids.map((id) => {

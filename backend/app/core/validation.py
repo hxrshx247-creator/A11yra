@@ -1,5 +1,6 @@
 from io import BytesIO
 from pathlib import PureWindowsPath
+import re
 from zipfile import BadZipFile, ZipFile
 from zlib import error as CompressionError
 
@@ -23,6 +24,8 @@ def read_docx(upload: UploadFile) -> tuple[str, bytes, WordDocument]:
     mime = (upload.content_type or "").partition(";")[0].strip().lower()
     if len(filename) <= len(".docx") or not filename.lower().endswith(".docx") or mime != DOCX_MIME:
         raise ApiError(415, "invalid_file_type", "Choose a Word document with the .docx extension.")
+    stem = re.sub(r'[\x00-\x1f\x7f<>:"|?*]', "_", filename[:-5]).strip(" .")[:245]
+    filename = (stem or "document") + filename[-5:]
 
     if upload.size is not None and upload.size > MAX_UPLOAD_BYTES:
         raise upload_too_large()
@@ -42,6 +45,18 @@ def read_docx(upload: UploadFile) -> tuple[str, bytes, WordDocument]:
                 or len(set(names)) != len(names)
                 or "word/document.xml" not in names
             ):
+                raise BadZipFile
+            for name in names:
+                normalized = name.lower().replace("\\", "/")
+                if (
+                    normalized.startswith(("word/embeddings/", "word/activex/"))
+                    or "vbaproject" in normalized
+                    or normalized.endswith((".exe", ".dll", ".msi", ".bat", ".cmd", ".ps1", ".vbs", ".js"))
+                    or ".." in normalized.split("/")
+                ):
+                    raise BadZipFile
+            content_types = package.read("[Content_Types].xml").lower()
+            if b"macroenabled" in content_types or b"vbaproject" in content_types:
                 raise BadZipFile
 
         document = Document(BytesIO(contents))

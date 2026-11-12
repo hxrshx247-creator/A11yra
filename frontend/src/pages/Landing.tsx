@@ -1,32 +1,135 @@
+import { CubeBackdrop } from "../components/CubeBackdrop";
+import { useState } from "react";
+import { ButtonLink } from "../components/Button";
+import { Icon } from "../components/Icon";
+
+const STEPS = [
+  ["Upload", "Drop in a Word document. You choose when to share it."],
+  ["Audit", "Check metadata, headings, images, tables and hyperlinks for accessibility barriers."],
+  ["Understand & fix", "See why each finding matters to learners, then review and approve suggested changes."],
+  ["Re-audit", "Verify the improvements, then export the document or publish a link to the learner reader."],
+] as const;
+
+const CHECKS = [
+  ["T", "Metadata", "Titles and language help assistive technology announce content correctly."],
+  ["H", "Headings", "A logical outline for screen reader navigation."],
+  ["I", "Images", "Text descriptions that explain what an image communicates."],
+  ["▦", "Tables", "Header rows and structure that read in order."],
+  ["↗", "Links", "Descriptive text that tells readers where a link leads."],
+] as const;
+
+const EXAMPLES = [
+  ["Image has no alt text", "error", "Error"],
+  ["Heading jumps from level 1 to level 3", "warning", "Warning"],
+  ["Document language is set", "success", "Passed"],
+] as const;
+
+function ReaderPreview() {
+  const [size, setSize] = useState(19);
+  const [spacing, setSpacing] = useState(17);
+  const [ruler, setRuler] = useState(false);
+  const [position, setPosition] = useState(32);
+
+  return <div className="reader-preview">
+    <fieldset className="reader-preview-controls">
+      <legend>Reading controls</legend>
+      <label>Text size
+        <input type="range" min="16" max="30" value={size}
+          aria-valuetext={size + " pixels"} onChange={(event) => setSize(event.currentTarget.valueAsNumber)} />
+      </label>
+      <label>Line spacing
+        <input type="range" min="14" max="22" value={spacing}
+          aria-valuetext={String(spacing / 10)} onChange={(event) => setSpacing(event.currentTarget.valueAsNumber)} />
+      </label>
+      <label className="reader-preview-checkbox">
+        <input type="checkbox" checked={ruler} onChange={(event) => setRuler(event.currentTarget.checked)} />
+        Reading ruler
+      </label>
+      {ruler && <label>Ruler position
+        <input type="range" min="0" max="100" value={position} onChange={(event) => setPosition(event.currentTarget.valueAsNumber)} />
+      </label>}
+    </fieldset>
+    <article className="reader-preview-page" onPointerMove={(event) => {
+      if (!ruler || event.pointerType === "touch") return;
+      const bounds = event.currentTarget.getBoundingClientRect();
+      setPosition(Math.round(Math.max(0, Math.min(100, (event.clientY - bounds.top) / bounds.height * 100))));
+    }}>
+      {ruler && <div className="reader-preview-ruler" style={{ top: position + "%" }} aria-hidden="true" />}
+      <h3>Photosynthesis, simply</h3>
+      <div style={{ fontSize: size / 16 + "rem", lineHeight: spacing / 10 }}>
+        <p>Plants turn light into food. Inside each leaf, tiny structures called chloroplasts capture sunlight and use it to turn water and carbon dioxide into sugar.</p>
+        <p>The sugar fuels growth. Plants also release oxygen, the same gas we breathe.</p>
+        <p>Every learner reads differently. Try adjusting this page to see which settings make it easier to read.</p>
+      </div>
+    </article>
+  </div>;
+}
+
+function RevealWords({ text }: { text: string }) {
+  return <>{text.split(" ").map((word, index) =>
+    <span key={index}><span className="landing-reveal-word">{word}</span>{" "}</span>)}</>;
+}
+
 export function Landing() {
-  return (
-    <main id="main" className="landing" tabIndex={-1}>
-      <section className="landing-hero">
-        <div>
-          <h1>Make Word handouts easier to navigate</h1>
-          <p>Check a handout for barriers that can make reading with a screen reader harder. Review the findings, approve fixes, and download the repaired document.</p>
-          <a className="button-link" href="/upload">Check a document</a>
+  return <main id="main" className="landing" tabIndex={-1}>
+    <section className="landing-hero" id="top" aria-labelledby="hero-heading">
+      <CubeBackdrop className="landing-cubes" />
+      <div className="landing-wrap">
+        <p className="landing-eyebrow">Accessibility-first EdTech</p>
+        <h1 id="hero-heading">
+          {["Learning", "that fits", "every reader."].map((line) =>
+            <span className="landing-hero-line" key={line}><span>{line} </span></span>)}
+        </h1>
+        <p className="landing-hero-description">Audit and repair educational Word documents, then share them in a reading space that students can adjust to suit them.</p>
+        <div className="landing-actions">
+          <ButtonLink href="#engine">See how it works</ButtonLink>
+          <ButtonLink href="#reader" variant="secondary">Try the reader</ButtonLink>
         </div>
-        <svg viewBox="0 0 260 230" className="hero-document" aria-hidden="true" focusable="false">
-          <rect x="50" y="31" width="156" height="172" rx="15" fill="#dceaf0" opacity=".4" />
-          <rect x="36" y="17" width="156" height="172" rx="15" fill="#fff" />
-          <g className="hero-lines" fill="none" stroke="#234d68" strokeWidth="7" strokeLinecap="round">
-            <path d="M61 55h92M61 77h54" />
-            <path d="M61 108h104M61 129h80M61 150h70" opacity=".53" />
-          </g>
-          <circle cx="189" cy="174" r="32" fill="#234d68" stroke="#e9f0f4" strokeWidth="5" />
-          <path d="m175 175 9 9 18-20" fill="none" stroke="white" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
-      </section>
-      <section className="landing-details" aria-labelledby="scope-heading">
-        <h2 id="scope-heading">What the audit checks</h2>
-        <ul>
-          <li>Document title and language</li>
-          <li>Heading structure and link text</li>
-          <li>Image alt text and table headers</li>
+      </div>
+    </section>
+    <section className="landing-alt" id="engine" aria-labelledby="engine-heading">
+      <div className="landing-wrap">
+        <p className="landing-eyebrow">Document engine</p>
+        <h2 id="engine-heading"><RevealWords text="From upload to verified, in four moves." /></h2>
+        <p className="landing-lead"><RevealWords text="Educators stay in control. Each finding explains the issue and gives you a chance to review the fix." /></p>
+        <ol className="landing-steps">
+          {STEPS.map(([name, description], index) => <li key={name}>
+            <span aria-hidden="true">0{index + 1}</span><h3>{name}</h3><p>{description}</p>
+          </li>)}
+        </ol>
+      </div>
+    </section>
+    <section id="checks" aria-labelledby="checks-heading">
+      <div className="landing-wrap">
+        <p className="landing-eyebrow">What we check</p>
+        <h2 id="checks-heading"><RevealWords text="Five places barriers hide." /></h2>
+        <ul className="landing-checks" role="list">
+          {CHECKS.map(([symbol, name, description]) => <li key={name}>
+            <span className="landing-check-icon" aria-hidden="true">{symbol}</span>
+            <h3>{name}</h3><p>{description}</p>
+          </li>)}
         </ul>
-        <p>Use a .docx file up to 10 MB. The audit focuses on six common barriers in Word documents. Review the findings and use your judgment before sharing the handout.</p>
-      </section>
-    </main>
-  );
+        <ul className="landing-examples" aria-label="Example audit results">
+          {EXAMPLES.map(([finding, status, label]) => <li key={finding}>
+            <span>{finding}</span><span className={"landing-tag landing-tag--" + status}><Icon name={status} /> {label}</span>
+          </li>)}
+        </ul>
+      </div>
+    </section>
+    <section className="landing-alt" id="reader" aria-labelledby="reader-heading">
+      <div className="landing-wrap">
+        <p className="landing-eyebrow">Learner experience</p>
+        <h2 id="reader-heading"><RevealWords text="Make the page fit the student." /></h2>
+        <p className="landing-lead"><RevealWords text="Try adjusting the text size, line spacing and reading ruler in this preview." /></p>
+        <ReaderPreview />
+      </div>
+    </section>
+    <section className="landing-cta" aria-labelledby="cta-heading">
+      <div className="landing-wrap">
+        <h2 id="cta-heading"><RevealWords text="Find barriers in your course documents." /></h2>
+        <p className="landing-lead">A11yra checks six common barriers in Word documents. The audit is not a compliance guarantee.</p>
+        <ButtonLink href="/account/login?next=%2Fworkspace">Sign in <Icon name="arrow" /></ButtonLink>
+      </div>
+    </section>
+  </main>;
 }

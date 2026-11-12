@@ -1,0 +1,94 @@
+[
+  {
+    "route": "/account/signup",
+    "violations": []
+  },
+  {
+    "route": "/account/login",
+    "violations": []
+  },
+  {
+    "route": "/workspace",
+    "violations": []
+  },
+  {
+    "route": "/r/{token}",
+    "violations": []
+  },
+  {
+    "route": "/history/{id}",
+    "violations": []
+  },
+  {
+    "route": "/workspace/dashboard",
+    "violations": []
+  },
+  {
+    "route": "/workspace/activity",
+    "violations": []
+  },
+  {
+    "route": "/workspace/members",
+    "violations": []
+  },
+  {
+    "route": "/workspace/keys",
+    "violations": []
+  },
+  {
+    "route": "/account/settings",
+    "violations": []
+  },
+  {
+    "route": "/account/forgot",
+    "violations": []
+  },
+  {
+    "route": "/account/verify",
+    "violations": []
+  },
+  {
+    "route": "/account/reset",
+    "violations": []
+  },
+  {
+    "route": "/account/invite",
+    "violations": []
+  },
+  {
+    "route": "/pricing",
+    "violations": []
+  },
+  {
+    "route": "/status",
+    "violations": []
+  },
+  {
+    "route": "/checks",
+    "violations": []
+  },
+  {
+    "route": "/security",
+    "violations": []
+  },
+  {
+    "route": "/accessibility",
+    "violations": []
+  },
+  {
+    "route": "/terms",
+    "violations": []
+  },
+  {
+    "route": "/privacy",
+    "violations": []
+  },
+  {
+    "route": "/support",
+    "violations": []
+  },
+  {
+    "route": "/changelog",
+    "violations": []
+  }
+]

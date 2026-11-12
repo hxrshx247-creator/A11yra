@@ -3,6 +3,8 @@
 Single source of truth for **Build Phase 1** (teacher engine) and **Build Phase 2** (learner reader/export).
 If any other prompt, README or code disagrees with this file, **this file wins**. Do not rename anything defined here without updating this file first.
 
+Phase 3 applies the additive [contract amendment](docs/CHANGELOG-CONTRACT.md#phase-3-amendment). The original document request and response shapes remain in force.
+
 ---
 
 ## 0. Rules for the coding agent (opencode)

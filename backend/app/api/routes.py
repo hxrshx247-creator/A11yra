@@ -1,8 +1,9 @@
+from datetime import timedelta
+from pathlib import Path
 from typing import Annotated
 from uuid import UUID, uuid4
 
-from fastapi import APIRouter, File, Request, Response, UploadFile
-from starlette.background import BackgroundTask
+from fastapi import APIRouter, Depends, File, Request, Response, UploadFile
 
 from app.audit.reaudit import reaudit_document
 from app.audit.runner import run_audit
@@ -10,8 +11,16 @@ from app.core.config import DOCX_MIME
 from app.core.errors import ApiError
 from app.core.validation import read_docx
 from app.export.docx_export import ExportPendingVerification, InvalidExport, prepare_docx_export
+from app.export.learner_download import prepare_learner_download
 from app.models import Audit, FixRequest, FixResponse, ReauditResponse, UploadResponse
 from app.repair.service import repair_document
+from app.product.db import now
+from app.product.documents import record_audit, record_export
+from app.product.plans import check_upload, lock_workspace, workspace_plan
+from app.product.retention import remove_content
+from app.product.security import get_db, log_event
+from app.product.tables import Document, FixRecord, UsageEvent
+from app.product.workspaces import require_role
 
 router = APIRouter(prefix="/api")
 
@@ -34,21 +43,59 @@ def health() -> dict[str, str]:
 
 @router.post("/documents", status_code=201)
 def upload_document(
-    request: Request, response: Response, file: Annotated[UploadFile, File()]
+    request: Request, response: Response, file: Annotated[UploadFile, File()],
+    context=Depends(require_role("editor")), db=Depends(get_db),
 ) -> UploadResponse:
+    return save_upload(request, response, file, context, db)
+
+
+@router.post("/documents/sample", status_code=201)
+def sample_document(request: Request, response: Response, context=Depends(require_role("editor")),
+                    db=Depends(get_db)) -> UploadResponse:
+    fixture = Path(__file__).resolve().parents[2] / "fixtures" / "pilot-syllabus.docx"
+    from starlette.datastructures import Headers
+
+    with fixture.open("rb") as source:
+        file = UploadFile(source, filename="Sample syllabus.docx", headers=Headers({"content-type": DOCX_MIME}))
+        return save_upload(request, response, file, context, db)
+
+
+def save_upload(request, response, file, context, db):
+    user, workspace, _ = context
     filename, contents, document = read_docx(file)
+    check_upload(db, workspace, len(contents))
     document_id = uuid4()
     audit = run_audit(document, document_id)
+    current = now()
+    state = request.app.state
+    plan = workspace_plan(db, workspace)
     try:
-        request.app.state.documents.save(document_id, contents, audit)
+        state.documents.save(document_id, contents, audit)
     except OSError:
         raise ApiError(500, "storage_failed", "The server could not save the document. Try again.") from None
+    try:
+        db.add(Document(
+            id=str(document_id), workspace_id=workspace, uploaded_by=user.id, filename=filename, size=len(contents),
+            expires_at=current + timedelta(hours=state.file_hours),
+            history_until=current + max(timedelta(hours=state.file_hours),
+                                        timedelta(days=min(state.audit_days, plan.history_days))),
+        ))
+        db.flush()
+        record_audit(db, audit)
+        db.add(UsageEvent(workspace_id=workspace, kind="audit"))
+        for action in ("document_uploaded", "audit_run"):
+            log_event(db, action, "document", request=request, workspace=workspace, actor=user.id, target=str(document_id))
+        db.commit()
+    except Exception:
+        state.documents.purge(document_id)
+        raise
     response.headers["Cache-Control"] = "no-store"
     return UploadResponse(document_id=document_id, filename=filename, audit=audit)
 
 
 @router.get("/documents/{id}/audit")
-def get_audit(id: str, request: Request, response: Response) -> Audit:
+def get_audit(id: str, request: Request, response: Response,
+              _context=Depends(require_role("viewer", document=True, active=True))) -> Audit:
     document_id = parse_document_id(id)
     try:
         audit = request.app.state.documents.load_audit(document_id)
@@ -61,27 +108,43 @@ def get_audit(id: str, request: Request, response: Response) -> Audit:
 
 
 @router.post("/documents/{id}/fixes")
-def apply_document_fixes(id: str, fixes: FixRequest, request: Request, response: Response) -> FixResponse:
+def apply_document_fixes(id: str, fixes: FixRequest, request: Request, response: Response,
+                         context=Depends(require_role("editor", document=True, active=True)),
+                         db=Depends(get_db)) -> FixResponse:
     document_id = parse_document_id(id)
+    user, workspace, doc = context
+    lock_workspace(db, workspace)
     try:
         result = repair_document(request.app.state.documents, document_id, fixes.fixes)
     except (OSError, ValueError):
         raise ApiError(500, "storage_failed", "The server could not save the repairs. Try again.") from None
     if result is None:
         raise document_not_found()
+    if result.applied:
+        db.add(FixRecord(document_id=doc.id, actor_user_id=user.id,
+                         result={"applied": [fix.finding_id for fix in result.applied]}))
+        log_event(db, "fix_applied", "document", request=request, workspace=workspace, actor=user.id,
+                  target=doc.id, metadata={"count": len(result.applied)})
+        db.commit()
     response.headers["Cache-Control"] = "no-store"
     return result
 
 
 @router.post("/documents/{id}/reaudit")
-def reaudit(id: str, request: Request, response: Response) -> ReauditResponse:
+def reaudit(id: str, request: Request, response: Response,
+            context=Depends(require_role("editor", document=True, active=True)), db=Depends(get_db)) -> ReauditResponse:
     document_id = parse_document_id(id)
+    user, workspace, doc = context
+    lock_workspace(db, workspace)
     try:
         result = reaudit_document(request.app.state.documents, document_id)
     except (OSError, ValueError):
         raise ApiError(500, "storage_failed", "The server could not run a new audit. Try again.") from None
     if result is None:
         raise document_not_found()
+    record_audit(db, result.audit)
+    log_event(db, "reaudit", "document", request=request, workspace=workspace, actor=user.id, target=doc.id)
+    db.commit()
     response.headers["Cache-Control"] = "no-store"
     return result
 
@@ -91,7 +154,8 @@ def reaudit(id: str, request: Request, response: Response) -> ReauditResponse:
     response_class=Response,
     responses={200: {"content": {DOCX_MIME: {"schema": {"type": "string", "format": "binary"}}}}},
 )
-def export_docx(id: str, request: Request) -> Response:
+def export_docx(id: str, request: Request,
+                context=Depends(require_role("viewer", document=True, active=True)), db=Depends(get_db)) -> Response:
     document_id = parse_document_id(id)
     store = request.app.state.documents
     try:
@@ -103,26 +167,62 @@ def export_docx(id: str, request: Request) -> Response:
     if result is None:
         raise document_not_found()
 
-    contents, session = result
+    record_export(db, request, context, "docx")
     return Response(
-        content=contents,
+        content=result,
         media_type=DOCX_MIME,
         headers={
             "Content-Disposition": 'attachment; filename="a11yra-repaired.docx"',
             "Cache-Control": "no-store",
             "X-Content-Type-Options": "nosniff",
         },
-        background=BackgroundTask(store.remove_retired_session, session),
+    )
+
+
+@router.get(
+    "/documents/{id}/export/html",
+    response_class=Response,
+    responses={200: {"content": {
+        "text/html": {"schema": {"type": "string"}},
+        "application/zip": {"schema": {"type": "string", "format": "binary"}},
+    }}},
+)
+def export_learner(id: str, request: Request, offline: bool = False,
+                   context=Depends(require_role("viewer", document=True, active=True)), db=Depends(get_db)) -> Response:
+    document_id = parse_document_id(id)
+    store = request.app.state.documents
+    try:
+        result = prepare_learner_download(store, document_id, offline)
+    except ExportPendingVerification:
+        raise ApiError(409, "export_failed", "Run a new audit to verify applied fixes before downloading.") from None
+    except (OSError, ValueError, InvalidExport):
+        raise ApiError(500, "export_failed", "The server could not prepare the learner download.") from None
+    if result is None:
+        raise document_not_found()
+
+    record_export(db, request, context, "reader_html" if offline else "reader_zip")
+    filename = "a11yra-reader.html" if offline else "a11yra-reader.zip"
+    return Response(
+        content=result,
+        media_type="text/html" if offline else "application/zip",
+        headers={
+            "Content-Disposition": f'attachment; filename="{filename}"',
+            "Cache-Control": "no-store",
+            "X-Content-Type-Options": "nosniff",
+        },
     )
 
 
 @router.delete("/documents/{id}", status_code=204)
-def delete_document(id: str, request: Request) -> Response:
-    document_id = parse_document_id(id)
+def delete_document(id: str, request: Request,
+                    context=Depends(require_role("editor", document=True)), db=Depends(get_db)) -> Response:
+    user, workspace, doc = context
+    lock_workspace(db, workspace)
     try:
-        deleted = request.app.state.documents.delete(document_id)
+        remove_content(db, request.app.state, doc, shares=True)
     except OSError:
         raise ApiError(500, "storage_failed", "The server could not remove this upload. Try again.") from None
-    if not deleted:
-        raise document_not_found()
+    log_event(db, "document_deleted", "document", request=request, workspace=workspace, actor=user.id, target=doc.id)
+    db.delete(doc)
+    db.commit()
     return Response(status_code=204, headers={"Cache-Control": "no-store"})

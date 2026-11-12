@@ -1,5 +1,4 @@
 from io import BytesIO
-from pathlib import Path
 from uuid import UUID
 from zipfile import BadZipFile
 from zlib import error as CompressionError
@@ -19,7 +18,9 @@ class InvalidExport(Exception):
     pass
 
 
-def prepare_docx_export(store: DocumentStore, document_id: UUID) -> tuple[bytes, Path] | None:
+def prepare_docx_export(
+    store: DocumentStore, document_id: UUID,
+) -> bytes | None:
     with store.locked_session(document_id) as session:
         if session is None:
             return None
@@ -36,4 +37,4 @@ def prepare_docx_export(store: DocumentStore, document_id: UUID) -> tuple[bytes,
         except (BadZipFile, CompressionError, OpcError, XMLSyntaxError, KeyError, ValueError,
                 TypeError, AttributeError, RecursionError, RuntimeError):
             raise InvalidExport from None
-        return contents, store.retire_session(session)
+        return contents

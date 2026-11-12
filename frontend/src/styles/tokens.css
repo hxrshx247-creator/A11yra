@@ -1,0 +1,94 @@
+:root {
+  color-scheme: light;
+  --surface: #ffffff;
+  --sky: #8fb3cf;
+  --cube: rgba(79,116,148,.22);
+  --focus-ring: #1a3f75;
+  --paper: #f5f8fa;
+  --wash: #e9f0f5;
+  --mist: #caddeb;
+  --ink: #0f1e2b;
+  --ink-muted: #42596b;
+  --steel: #3b5b77;
+  --steel-deep: #19354d;
+  --line: #6f8ca5;
+  --line-strong: #526e88;
+  --status-success-ink: #16663a;
+  --status-success-fill: #e8f4ec;
+  --status-warning-ink: #7a4b00;
+  --status-warning-fill: #fff1d6;
+  --status-warning-border: #a05e00;
+  --status-error-ink: #a31f18;
+  --status-error-fill: #fceae7;
+  --font-heading: "Fraunces", Georgia, "Times New Roman", serif;
+  --font-body: "Atkinson Hyperlegible Next", system-ui, sans-serif;
+  --h1: clamp(2.2rem, 5vw, 3.6rem);
+  --h2: clamp(1.55rem, 3vw, 2.25rem);
+  --h3: clamp(1.2rem, 2vw, 1.52rem);
+  --body: clamp(1rem, .98rem + .12vw, 1.125rem);
+  --small: .9375rem;
+  --gutter: clamp(1rem, 4vw, 2.5rem);
+  --measure: 65ch;
+  --shell: 74rem;
+  --target: 2.75rem;
+  --radius: 1.125rem;
+  --motion-fast: 120ms;
+  --motion-base: 200ms;
+  --motion-slow: 320ms;
+  --ease-out: cubic-bezier(.22,.61,.36,1);
+  --ease-in-out: cubic-bezier(.45,0,.2,1);
+}
+
+[data-motion="off"] { --motion-fast: 0ms; --motion-base: 0ms; --motion-slow: 0ms; }
+
+@font-face {
+  font-family: "Fraunces";
+  src: url("/fonts/fraunces-latin-ext-standard-normal.woff2") format("woff2");
+  font-weight: 100 900;
+  font-display: swap;
+  unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF;
+}
+@font-face {
+  font-family: "Fraunces";
+  src: url("/fonts/fraunces-latin-standard-normal.woff2") format("woff2");
+  font-weight: 100 900;
+  font-display: swap;
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+@font-face {
+  font-family: "Atkinson Hyperlegible Next";
+  src: url("/fonts/atkinson-hyperlegible-next-latin-ext-wght-normal.woff2") format("woff2");
+  font-weight: 200 800;
+  font-display: swap;
+  unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF;
+}
+@font-face {
+  font-family: "Atkinson Hyperlegible Next";
+  src: url("/fonts/atkinson-hyperlegible-next-latin-wght-normal.woff2") format("woff2");
+  font-weight: 200 800;
+  font-display: swap;
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --surface: #132a3d;
+  --cube: rgba(143,179,207,.20);
+  --focus-ring: #caddeb;
+  --paper: #0b1722;
+  --wash: #102334;
+  --mist: #19354d;
+  --ink: #e8f0f6;
+  --ink-muted: #a9bdcc;
+  --steel: #8fb3cf;
+  --steel-deep: #caddeb;
+  --line: #5f819e;
+  --line-strong: #8fb3cf;
+  --status-success-ink: #6fd39a;
+  --status-success-fill: #143425;
+  --status-warning-ink: #f0c060;
+  --status-warning-fill: #3c2b15;
+  --status-warning-border: #dba94f;
+  --status-error-ink: #ff9a92;
+  --status-error-fill: #3c232c;
+}

@@ -5,7 +5,6 @@ from zipfile import ZIP_DEFLATED, ZipFile
 
 import pytest
 from docx import Document
-from fastapi.testclient import TestClient
 
 from app.core.config import DOCX_MIME, MAX_UPLOAD_BYTES, SESSION_TTL_SECONDS
 from app.main import app
@@ -25,28 +24,27 @@ def test_health(client):
     assert client.get("/api/health").json() == {"status": "ok"}
 
 
-def test_valid_upload_stores_private_copies_and_audit(docx_bytes):
-    with TestClient(app) as client:
-        root = app.state.documents.root
-        response = client.post(
-            "/api/documents", files={"file": (r"..\Handout.DOCX", docx_bytes, DOCX_MIME)}
-        )
-        assert response.status_code == 201
-        upload = UploadResponse.model_validate(response.json())
-        assert upload.filename == "Handout.DOCX"
-        assert upload.audit.document_id == upload.document_id
-        assert [check.id for check in upload.audit.checks] == [
-            "title", "language", "headings", "images", "tables", "links",
-        ]
-        assert [check.result for check in upload.audit.checks] == [
-            "issues", "passed", "issues", "not_evaluated", "not_evaluated", "not_evaluated",
-        ]
-        assert upload.audit.progress.model_dump() == {"passed": 1, "evaluated": 3, "percent": 33}
-        session = root / str(upload.document_id)
-        assert (session / "original.docx").read_bytes() == docx_bytes
-        assert (session / "working.docx").read_bytes() == docx_bytes
-        assert (session / "audit.json").read_text(encoding="utf-8") == upload.audit.model_dump_json()
-    assert not root.exists()
+def test_valid_upload_stores_private_copies_and_audit(client, docx_bytes):
+    root = app.state.documents.root
+    response = client.post(
+        "/api/documents", files={"file": (r"..\Handout.DOCX", docx_bytes, DOCX_MIME)}
+    )
+    assert response.status_code == 201
+    upload = UploadResponse.model_validate(response.json())
+    assert upload.filename == "Handout.DOCX"
+    assert upload.audit.document_id == upload.document_id
+    assert [check.id for check in upload.audit.checks] == [
+        "title", "language", "headings", "images", "tables", "links",
+    ]
+    assert [check.result for check in upload.audit.checks] == [
+        "issues", "passed", "issues", "not_evaluated", "not_evaluated", "not_evaluated",
+    ]
+    assert upload.audit.progress.model_dump() == {"passed": 1, "evaluated": 3, "percent": 33}
+    session = root / str(upload.document_id)
+    assert (session / "original.docx").read_bytes() == docx_bytes
+    assert (session / "working.docx").read_bytes() == docx_bytes
+    assert (session / "audit.json").read_text(encoding="utf-8") == upload.audit.model_dump_json()
+    assert root.exists()
 
 
 @pytest.mark.parametrize(

@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import type { FormEvent } from "react";
 import { submitFix } from "../api/client";
 import type { CheckId, Finding, Fix, FixType } from "../types/contract";
+import { Button } from "./Button";
+import { Icon } from "./Icon";
 
 export const FIX_TYPES: Partial<Record<CheckId, FixType>> = {
   title: "set_title",
@@ -60,7 +62,7 @@ export function FixForm({ documentId, finding, type, onApplied }: {
   return (
     <form className="repair-form" onSubmit={apply} aria-labelledby="repair-heading">
       <h2 id="repair-heading">Approve a fix</h2>
-      {error && <p className="form-error" id="repair-error" ref={errorSummary} tabIndex={-1}>{error}</p>}
+      {error && <p className="form-error" id="repair-error" ref={errorSummary} tabIndex={-1}><Icon name="error" />{error}</p>}
       {field && (
         <>
           <label htmlFor="repair-input">{field.label} (required)</label>
@@ -91,7 +93,7 @@ export function FixForm({ documentId, finding, type, onApplied }: {
           <label className="choice"><input type="checkbox" required aria-describedby={describedBy} /> Mark the first row as the header (required)</label>
         </>
       )}
-      <button type="submit" aria-disabled={pending}>Apply fix</button>
+      <Button type="submit" aria-disabled={pending}>Apply fix</Button>
       <span role="status">{pending ? "Applying fix…" : ""}</span>
     </form>
   );

@@ -1,17 +1,11 @@
 import { useRef, useState } from "react";
 import type { KeyboardEvent } from "react";
-import type { Audit, Check } from "../types/contract";
-import { Badge } from "./Badge";
+import type { Audit } from "../types/contract";
+import { StatusBadge } from "./StatusBadge";
 import { FindingCard } from "./FindingCard";
+import { Icon } from "./Icon";
 
-const RESULTS = {
-  passed: { tone: "success", label: "Passed" },
-  issues: { tone: "danger", label: "Needs attention" },
-  needs_review: { tone: "warning", label: "Needs review" },
-  not_evaluated: { tone: "neutral", label: "Not checked" },
-} as const satisfies Record<Check["result"], { tone: string; label: string }>;
-
-export function CheckList({ audit }: { audit: Audit }) {
+export function CheckList({ audit, canEdit }: { audit: Audit; canEdit: boolean }) {
   const { checks, findings } = audit;
   const [selected, setSelected] = useState(() => {
     const category = new URLSearchParams(window.location.search).get("check");
@@ -45,7 +39,6 @@ export function CheckList({ audit }: { audit: Audit }) {
         <h2 id="checks-heading">Checks</h2>
         <div className="check-list" role="tablist" aria-labelledby="checks-heading" aria-orientation="vertical">
           {checks.map((check, index) => {
-            const result = RESULTS[check.result];
             return (
               <button
                 className="check-card"
@@ -61,7 +54,7 @@ export function CheckList({ audit }: { audit: Audit }) {
                 onKeyDown={(event) => handleTabKey(event, index)}
               >
                 <span className="check-label">{check.label}</span>
-                <Badge tone={result.tone}>{result.label}</Badge>
+                <StatusBadge status={check.result} />
               </button>
             );
           })}
@@ -86,12 +79,14 @@ export function CheckList({ audit }: { audit: Audit }) {
                   {findings.filter((finding) => check.finding_ids.includes(finding.id)).map(
                     (finding) => (
                       <li key={finding.id}>
-                        <FindingCard finding={finding} documentId={audit.document_id} />
+                        <FindingCard finding={finding} documentId={canEdit ? audit.document_id : undefined} />
                       </li>
                     ),
                   )}
                 </ul>
-              ) : check.result === "passed" && <p className="empty-findings">No findings for this check.</p>}
+              ) : check.result === "passed" && <div className="empty-findings">
+                <p><Icon name="success" /> No findings for this check.</p>
+              </div>}
             </>
           )}
         </section>

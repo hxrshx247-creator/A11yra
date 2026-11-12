@@ -54,8 +54,8 @@ def test_reaudit_verifies_five_repairs_and_preserves_heading_findings(client, fi
     repaired = Document(BytesIO(download.content))
     assert repaired.core_properties.title == "Study group handout"
     assert run_audit(repaired, before.document_id).progress == result.audit.progress
-    assert client.get(f"{url}/audit").status_code == 404
-    assert not list(app.state.documents.root.iterdir())
+    assert client.get(f"{url}/audit").status_code == 200
+    assert (app.state.documents.root / str(before.document_id)).exists()
 
 
 def test_reappearing_finding_and_unconfirmed_fix(broken_doc):

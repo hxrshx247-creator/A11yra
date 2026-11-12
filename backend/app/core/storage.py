@@ -10,8 +10,9 @@ from app.models import Audit
 
 
 class DocumentStore:
-    def __init__(self, root: Path) -> None:
+    def __init__(self, root: Path, ttl_seconds: int = SESSION_TTL_SECONDS) -> None:
         self.root = root
+        self.ttl_seconds = ttl_seconds
         self._lock = Lock()
 
     def save(self, document_id: UUID, contents: bytes, audit: Audit) -> None:
@@ -34,7 +35,7 @@ class DocumentStore:
             except FileNotFoundError:
                 yield None
             else:
-                yield session if uploaded_at > time() - SESSION_TTL_SECONDS else None
+                yield session if uploaded_at > time() - self.ttl_seconds else None
 
     @staticmethod
     def current_state(session: Path) -> Path:
@@ -79,7 +80,7 @@ class DocumentStore:
             rmtree(previous_state, ignore_errors=True)
 
     def expire_old_sessions(self) -> None:
-        cutoff = time() - SESSION_TTL_SECONDS
+        cutoff = time() - self.ttl_seconds
         with self._lock:
             for session in self.root.iterdir():
                 with suppress(OSError):
@@ -104,3 +105,9 @@ class DocumentStore:
             retired = self.retire_session(session)
         self.remove_retired_session(retired)
         return True
+
+    def purge(self, document_id: UUID) -> None:
+        with self._lock:
+            session = self.root / str(document_id)
+            if session.is_dir():
+                rmtree(session)

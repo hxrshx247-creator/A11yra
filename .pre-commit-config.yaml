@@ -1,0 +1,15 @@
+repos:
+  - repo: local
+    hooks:
+      - id: backend-lint
+        name: Backend lint
+        entry: python -m ruff check backend
+        language: system
+        types: [python]
+        pass_filenames: false
+      - id: frontend-types
+        name: Frontend type check
+        entry: npm --prefix frontend exec -- tsc --noEmit --project frontend/tsconfig.json
+        language: system
+        files: ^frontend/
+        pass_filenames: false

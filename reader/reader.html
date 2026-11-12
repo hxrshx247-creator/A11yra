@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="und">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Word document</title>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <header class="reader-header">
+      <div class="header-inner">
+        <div class="reader-title">
+          <svg class="reader-mark" viewBox="0 0 40 44" aria-hidden="true" focusable="false">
+            <path class="mark-top" d="M20 2 38 12 20 22 2 12Z"/>
+            <path class="mark-left" d="m2 12 18 10v20L2 32Z"/>
+            <path class="mark-right" d="m20 22 18-10v20L20 42Z"/>
+          </svg>
+          <p id="document-title"></p>
+        </div>
+        <a href="#reading-settings">Reading settings</a>
+      </div>
+    </header>
+    <div class="reader-layout">
+      <nav class="contents" aria-label="Contents">
+        <details id="contents" open>
+          <summary>Contents</summary>
+          <ol id="contents-list"></ol>
+          <p id="contents-empty" hidden>This document has no headings.</p>
+        </details>
+      </nav>
+      <main id="main" tabindex="-1">
+        <article aria-labelledby="document-title"></article>
+        <div id="reading-ruler" aria-hidden="true" hidden></div>
+      </main>
+      <aside id="reading-settings" aria-labelledby="settings-heading" tabindex="-1">
+        <h2 id="settings-heading">Reading settings</h2>
+        <div class="settings-controls">
+          <label for="text-size">Text size</label>
+          <select id="text-size">
+            <option value="100">100%</option>
+            <option value="125">125%</option>
+            <option value="150">150%</option>
+            <option value="175">175%</option>
+            <option value="200">200%</option>
+          </select>
+          <label for="line-spacing">Line spacing</label>
+          <select id="line-spacing">
+            <option value="standard">Standard</option>
+            <option value="roomy">Roomy</option>
+            <option value="wide">Wide</option>
+          </select>
+          <label for="reading-theme">Theme</label>
+          <select id="reading-theme">
+            <option value="light">Light</option>
+            <option value="dark">Dark</option>
+            <option value="contrast">High contrast</option>
+          </select>
+          <label for="reading-font">Font</label>
+          <select id="reading-font">
+            <option value="standard">Default</option>
+            <option value="spaced">Dyslexia-friendly spacing</option>
+          </select>
+          <label for="reader-motion">Motion</label>
+          <select id="reader-motion" aria-describedby="reader-motion-source">
+            <option value="full">Motion on</option>
+            <option value="off">Motion off</option>
+          </select>
+          <p id="reader-motion-source" class="setting-hint">Following your device setting.</p>
+          <label class="shortcut-toggle">
+            <input id="ruler-enabled" type="checkbox">
+            Reading ruler
+          </label>
+          <div id="ruler-controls" hidden>
+            <label for="ruler-position">Ruler position</label>
+            <input id="ruler-position" type="range" min="0" max="100" value="25">
+          </div>
+          <label class="shortcut-toggle">
+            <input id="reader-shortcuts" type="checkbox" checked>
+            Enable single-key shortcuts
+          </label>
+          <button id="open-shortcuts" type="button">Keyboard shortcuts</button>
+          <button id="reset-settings" type="button">Reset settings</button>
+        </div>
+        <section class="read-along" aria-labelledby="read-along-heading">
+          <h3 id="read-along-heading">Read-along</h3>
+          <div id="speech-controls" class="speech-controls" hidden>
+            <button type="button" id="speech-play">Play</button>
+            <button type="button" id="speech-pause" aria-disabled="true">Pause</button>
+            <button type="button" id="speech-stop" aria-disabled="true">Stop</button>
+          </div>
+          <p id="speech-status" role="status"></p>
+        </section>
+      </aside>
+    </div>
+    <dialog id="shortcuts-dialog" aria-labelledby="shortcuts-heading">
+      <h2 id="shortcuts-heading">Keyboard shortcuts</h2>
+      <p>In the text or Contents, use these keys when single-key shortcuts are enabled.</p>
+      <ul>
+        <li><kbd>[</kbd> and <kbd>]</kbd> move between sections.</li>
+        <li><kbd>C</kbd> opens Contents.</li>
+        <li><kbd>+</kbd> or <kbd>−</kbd> adjusts text size.</li>
+        <li><kbd>R</kbd> plays or pauses read-along when available.</li>
+      </ul>
+      <button id="close-shortcuts" type="button" autofocus>Close keyboard shortcuts</button>
+    </dialog>
+  </body>
+</html>
