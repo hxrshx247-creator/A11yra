@@ -4,6 +4,10 @@
 
 A11yra helps educators find and repair common accessibility barriers in Word documents. Teachers can re-audit their changes, download the repaired DOCX, or share a learner reader with adjustable text size, line spacing, theme, and a reading ruler.
 
+**Live demo:** [a11yra-api.onrender.com](https://a11yra-api.onrender.com/)
+
+Project references: [accessibility test](docs/ACCESSIBILITY-TEST.md) · [security notes](docs/SECURITY-NOTES.md) · [deployment](docs/DEPLOYMENT.md) · [submission evidence](docs/evidence/README.md)
+
 ## Run locally
 
 **Fastest setup (Docker Compose):** with Docker Compose 2.24 or newer, run one command from the repository root:
@@ -68,7 +72,7 @@ npm --prefix frontend run dev
 
 </details>
 
-Both setups use [http://127.0.0.1:5173/](http://127.0.0.1:5173/). The defaults work without an API key or mail provider. For configuration and deployment, see [the environment template](.env.example) and [operations guide](docs/OPERATIONS.md).
+Both setups use [http://127.0.0.1:5173/](http://127.0.0.1:5173/). The defaults work without an API key or mail provider. For configuration, see [the environment template](.env.example).
 
 ### Running on alternate ports
 
@@ -112,7 +116,7 @@ Demo video: [link to be added]
 
 ## Privacy and limitations
 
-Uploaded originals, working DOCX files, and the current audit are stored in private server storage. Working files expire after 24 hours by default; audit history has a separate retention period (30 days by default). A teacher can delete a document from its audit page before expiry. Published reader links have their own expiry and can be revoked. See [data inventory](docs/DATA-INVENTORY.md) for deployment-controlled retention details.
+Uploaded originals, working DOCX files, and the current audit are stored in private server storage. Working files expire after 24 hours by default; audit history has a separate retention period (30 days by default). A teacher can delete a document from its audit page before expiry. Published reader links have their own expiry and can be revoked.
 
 A11yra checks common, machine-detectable DOCX barriers; it does not certify WCAG conformance. It cannot reliably infer whether a picture is decorative, whether table cells make sense as headers, or whether a proposed heading and link label reflect the author’s intent. Teachers must inspect the source and learner reader. Complex layout, scanned documents, equations, charts, tracked changes, and non-main document stories may need manual review.
 
@@ -133,7 +137,7 @@ Fill in this section before submission so judges can distinguish event work from
 | [reader/](reader/) | Learner reader assets and browser tests |
 | [docs/](docs/) | Setup, operations, API, and accessibility references |
 
-The [local API reference](http://127.0.0.1:5173/api/docs) is available when the app is running. See the [document contract](A11YRA_CONTRACT.md) and [workspace and reader API](docs/PHASE-3-API.md) for details.
+The [local API reference](http://127.0.0.1:5173/api/docs) is available when the app is running.
 
 ## Verify a checkout
 
