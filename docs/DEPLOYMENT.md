@@ -8,7 +8,7 @@
 | `wsl.exe --list --quiet` | Reported that WSL is not installed. |
 | `docker compose version` | PowerShell could not find `docker`. |
 | `docker compose up --build --wait` | PowerShell could not find `docker`. The stack did not start. |
-| `alembic -c backend/alembic.ini upgrade head --sql` with `DATABASE_URL=postgresql+psycopg://localhost/a11yra` | Generated PostgreSQL DDL offline. See the verification report for live database coverage. |
+| `alembic -c backend/alembic.ini upgrade head --sql` with `DATABASE_URL=postgresql+psycopg://localhost/a11yra` | Generated PostgreSQL DDL offline. The GitHub Actions PostgreSQL migration job checks the schema against a live database. |
 
 A clean-clone Compose build, migration against a live PostgreSQL instance, backend tests on PostgreSQL, and Playwright through the Compose proxy remain unverified locally. The CI Compose job is configured to run these steps on a clean checkout after the changes are pushed.
 

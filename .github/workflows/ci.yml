@@ -84,6 +84,9 @@ jobs:
         with:
           node-version: "24"
       - run: docker compose up --build --wait
+      - name: Show API startup logs on failure
+        if: failure()
+        run: docker compose logs --no-color api
       - run: docker compose exec -T api alembic check
       - run: >
           docker compose exec -T api sh -c
