@@ -106,6 +106,17 @@
   background: var(--surface);
 }
 .document-preview p { margin-block: .35rem .75rem; color: var(--ink-muted); overflow-wrap: anywhere; }
+.preview-flags { display: flex; flex-wrap: wrap; gap: .5rem; margin: 0 0 1rem; padding: 0; list-style: none; }
+.preview-flags button {
+  min-block-size: var(--target);
+  padding: .35rem .7rem;
+  border: 1px solid var(--line-strong);
+  border-radius: .5rem;
+  background: var(--wash);
+  color: var(--ink);
+  text-align: start;
+}
+.preview-flags button[aria-pressed="true"] { background: var(--ink); color: var(--surface); }
 .document-pages {
   display: grid;
   justify-items: center;

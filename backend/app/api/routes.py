@@ -145,6 +145,7 @@ def dismiss_heading_candidate(id: str, finding_id: str, request: Request, respon
 
 @router.get("/documents/{id}/preview")
 def document_preview(id: str, request: Request, response: Response, layout: bool = False,
+                     annotated: bool = False,
                      context=Depends(require_role("viewer", document=True, active=True))) -> dict:
     document_id = parse_document_id(id)
     store = request.app.state.documents
@@ -153,9 +154,12 @@ def document_preview(id: str, request: Request, response: Response, layout: bool
         with store.locked_session(document_id) as session:
             if session is None:
                 raise document_not_found()
-            contents = (store.current_state(session) / "working.docx").read_bytes()
-        pages = render_preview_pages(contents) if layout else []
-        html = "" if pages else convert_docx_to_html(contents)
+            state = store.current_state(session)
+            contents = (state / "working.docx").read_bytes()
+            flags = [finding for finding in store.read_audit(state).findings
+                     if finding.status in {"open", "needs_review"}] if annotated else None
+        pages = render_preview_pages(contents) if layout and not annotated else []
+        html = "" if pages else convert_docx_to_html(contents, flags=flags)
     except (OSError, ValueError):
         raise ApiError(500, "preview_failed", "The document preview could not be prepared.") from None
     response.headers["Cache-Control"] = "no-store"

@@ -1,6 +1,6 @@
 from docx.document import Document
 
-from app.audit._body import BODY_CONTENT, text_runs, word_flag
+from app.audit._body import BODY_CONTENT, excerpt, text_runs, visible_text, word_flag
 from app.models import Check, CheckResult, Finding
 
 
@@ -38,7 +38,10 @@ def check_tables(document: Document) -> tuple[Check, list[Finding]]:
             if paragraph.xpath("ancestor::w:tr[1]")[0] is first_row
             for run in text_runs(paragraph)
         ]
-        evidence = "The first row has no active header marker."
+        labels = ", ".join(f'“{excerpt(visible_text(cell), 40) or "(blank)"}”' for cell in cells[:6])
+        if len(cells) > 6:
+            labels += ", …"
+        evidence = f"Table {table_index + 1} has {len(rows)} rows. The first row contains {labels or 'no cells'} and has no active header marker."
         if any(word_flag(row, "w:trPr/w:tblHeader") for row in rows[1:]):
             evidence += " A later row is marked, so Word ignores its marker."
         if runs and all(word_flag(run, "w:rPr/w:b") for run in runs):
@@ -50,8 +53,10 @@ def check_tables(document: Document) -> tuple[Check, list[Finding]]:
             location=f"Table {table_index + 1}, first row",
             locator={"table_index": table_index},
             evidence=evidence,
-            barrier="Without a header row, screen-reader users may have trouble identifying what each column means.",
-            suggestion="Check which row contains column labels, then mark the first row as a header if appropriate.",
+            barrier=(f"When readers move through the data in Table {table_index + 1}, their screen reader may not associate "
+                     f"the cells with {labels or 'the column labels'}."),
+            suggestion=(f"Inspect the flagged first row and confirm that {labels or 'its cells'} label the data underneath. "
+                        "If they do, mark the first row as the header. If the labels are elsewhere, move them to the top in Word first."),
             severity="medium" if len(rows) > 1 and len(cells) > 1 else "low",
             confidence="high",
             status="open",

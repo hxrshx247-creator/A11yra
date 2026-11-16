@@ -19,6 +19,11 @@ def visible_text(element) -> str:
     return "".join(node.text or "" for node in visible_text_nodes(element))
 
 
+def excerpt(text: str, limit: int = 100) -> str:
+    text = " ".join(text.split())
+    return text if len(text) <= limit else text[:limit - 1].rstrip() + "…"
+
+
 def visible_text_nodes(element):
     return _VISIBLE_TEXT_NODES(element)
 

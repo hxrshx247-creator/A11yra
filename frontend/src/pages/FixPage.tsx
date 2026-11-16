@@ -3,6 +3,7 @@ import { useState } from "react";
 import { dismissHeadingCandidate } from "../api/client";
 import { FindingCard } from "../components/FindingCard";
 import { FixForm, FIX_TYPES } from "../components/FixForm";
+import { DocumentPreview } from "../components/DocumentPreview";
 import { Button, ButtonLink } from "../components/Button";
 import { Icon } from "../components/Icon";
 import { useAudit } from "../hooks/useAudit";
@@ -31,6 +32,10 @@ export function FixPage({ documentId, findingId }: { documentId: string; finding
         {!applied && (error || (audit && !finding)) && <Icon name="error" />}
         {applied ? "Fix applied. Run a new audit to verify it." : message}
       </div>
+      {audit && shownFinding && <DocumentPreview key={`${documentId}:${findingId}:${applied}`}
+        documentId={documentId}
+        findings={audit.findings.map((item) => item.id === findingId ? shownFinding : item)}
+        currentFindingId={applied ? undefined : findingId} />}
       {shownFinding && (
         <div className="fix-layout">
           <FindingCard finding={shownFinding} />

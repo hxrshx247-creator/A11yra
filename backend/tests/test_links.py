@@ -34,7 +34,7 @@ def test_flags_generic_text_and_raw_addresses_in_a_table(label):
     assert check.result == "issues"
     finding, = findings
     assert finding.locator == {"paragraph_index": 1, "link_index": 1}
-    assert "example.org" not in finding.evidence
+    assert " ".join(label.split()) in finding.evidence
 
 
 def test_reads_text_from_simple_hyperlink_field():

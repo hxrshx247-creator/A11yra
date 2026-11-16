@@ -21,6 +21,8 @@ from app.audit.headings import _heading_level, _style_chain
 from app.audit.images import _is_decorative, iter_picture_properties
 from app.audit.language import DEFAULT_LANGUAGE_PATH, primary_language
 from app.audit.tables import body_tables, table_rows
+from app.export.preview_flags import insert_preview_flags, render_preview_flags
+from app.models import Finding
 
 HEADINGS = ("h1", "h2", "h3", "h4", "h5", "h6")
 ALLOWED_TAGS = {
@@ -220,11 +222,13 @@ def _add_sections_and_figures(fragment: BeautifulSoup) -> None:
             (block or fragment).append(disclosure)
 
 
-def convert_docx_to_html(contents: bytes) -> str:
+def convert_docx_to_html(contents: bytes, *, flags: list[Finding] | None = None) -> str:
     """Return a complete HTML document from a validated or repaired DOCX."""
     document = Document(BytesIO(contents))
     title, language = _metadata(document)
     marker = f"a11yra-{uuid4().hex}"
+    if flags:
+        insert_preview_flags(document, flags, marker)
     for _, properties in iter_picture_properties(document):
         if properties is None:
             continue
@@ -261,4 +265,6 @@ def convert_docx_to_html(contents: bytes) -> str:
     page.title.string = title
     page.header.p.string = title
     page.article.extend(list(fragment.contents))
+    if flags:
+        render_preview_flags(page, flags, marker)
     return str(page)

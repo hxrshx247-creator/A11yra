@@ -2,6 +2,8 @@ from os import utime
 from time import time
 from uuid import uuid4
 
+from bs4 import BeautifulSoup
+
 import pytest
 
 from app.core.config import DOCX_MIME, SESSION_TTL_SECONDS
@@ -76,6 +78,13 @@ def test_reader_preview_uses_original_and_repaired_document_versions(client, fix
     assert preview.headers["cache-control"] == "no-store"
     assert preview.json()["filename"] == source.name
     assert "<title>Word document</title>" in preview.json()["html"]
+    flagged = BeautifulSoup(client.get(f"{url}/preview?annotated=true").json()["html"], "html.parser")
+    assert flagged.header.find("mark", id="finding-title-missing")
+    assert flagged.header.find("mark", id="finding-language-default-missing")
+    assert flagged.article.find("mark", id="finding-heading-lookalike-001")
+    assert flagged.figure.find("mark", id="finding-img-001")
+    assert flagged.table.find("mark", id="finding-table-001")
+    assert flagged.article.find("mark", id="finding-link-004-001")
     for fix in [
         {"finding_id": "title-missing", "type": "set_title", "payload": {"title": "Study group"}},
         {"finding_id": "language-default-missing", "type": "set_language", "payload": {"lang": "en-IN"}},
@@ -92,6 +101,10 @@ def test_reader_preview_uses_original_and_repaired_document_versions(client, fix
     working = client.get(f"{url}/preview").json()
     assert "<title>Study group</title>" in working["html"]
     assert "Study group schedule" in working["html"]
+    repaired_flags = BeautifulSoup(client.get(f"{url}/preview?annotated=true").json()["html"], "html.parser")
+    assert {flag["id"] for flag in repaired_flags.find_all("mark")} == {
+        "finding-headings-missing", "finding-heading-lookalike-001", "finding-table-001",
+    }
 
 
 def test_messy_demo_opens_stack_and_queue_lecture(client):

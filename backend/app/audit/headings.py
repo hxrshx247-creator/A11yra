@@ -6,7 +6,7 @@ from docx.enum.style import WD_STYLE_TYPE
 from docx.opc.constants import RELATIONSHIP_TYPE as RT
 from docx.oxml.ns import nsmap
 
-from app.audit._body import body_paragraphs, text_runs, visible_text, word_flag, word_value
+from app.audit._body import body_paragraphs, excerpt, text_runs, visible_text, word_flag, word_value
 from app.models import Check, CheckResult, Finding
 
 
@@ -82,12 +82,14 @@ def check_headings(document: Document) -> tuple[Check, list[Finding]]:
 
     findings: list[Finding] = []
     previous_level = 0
+    previous_heading = ""
     text_paragraphs = 0
     for index, paragraph in enumerate(body_paragraphs(document)):
         runs = text_runs(paragraph)
         if not runs:
             continue
         text = visible_text(paragraph).strip()
+        label = excerpt(text)
         text_paragraphs += 1
         chain = paragraph_styles(word_value(paragraph, "w:pPr/w:pStyle"))
         level = _heading_level(chain)
@@ -95,37 +97,42 @@ def check_headings(document: Document) -> tuple[Check, list[Finding]]:
         if level is not None:
             if level > previous_level + 1:
                 evidence = (
-                    f"Heading {level} follows Heading {previous_level}."
+                    f'“{label}” is Heading {level} after “{previous_heading}” (Heading {previous_level}).'
                     if previous_level
-                    else f"The first heading is Heading {level}."
+                    else f'The first heading, “{label}”, is Heading {level}.'
                 )
                 findings.append(Finding(
                     id=f"heading-skip-{index + 1:03d}", check_id="headings", location=location,
                     locator={"paragraph_index": index}, evidence=evidence,
-                    barrier="A skipped level can make the document outline harder to follow.",
-                    suggestion=f"Convert to Heading {previous_level + 1} to continue the outline, if this is a section heading.",
+                    barrier=f'“{label}” appears deeper in heading navigation than the preceding outline establishes.',
+                    suggestion=f'Convert “{label}” to Heading {previous_level + 1} if it belongs at the next level of this outline.',
                     severity="medium", confidence="high", status="open", fixable="teacher_approved",
                     preview=text,
+                    suggested_value=str(previous_level + 1),
                 ))
             previous_level = level
+            previous_heading = label
         elif _looks_like_heading(paragraph, runs, chain, body_size):
             findings.append(Finding(
                 id=f"heading-lookalike-{index + 1:03d}", check_id="headings", location=location,
                 locator={"paragraph_index": index},
-                evidence="A short paragraph is bold or larger than the body text.",
-                barrier="A section label formatted this way may be missing from screen-reader heading navigation.",
-                suggestion=f"If this starts a section, convert it to Heading {min(previous_level + 1, 6)}.",
+                evidence=f'“{label}” looks like a heading because of its size or bold text, but uses no heading level.',
+                barrier=f'Readers who navigate by headings will skip “{label}” if it is meant to start a section.',
+                suggestion=f'If “{label}” starts a section, convert it to Heading {min(previous_level + 1, 6)}. Otherwise select Not a heading.',
                 severity="low", confidence="high", status="needs_review", fixable="teacher_approved",
                 preview=text,
+                suggested_value=str(min(previous_level + 1, 6)),
             ))
 
     if text_paragraphs and not previous_level:
+        candidate = next((finding.preview for finding in findings if finding.preview), None)
+        starting_point = f' Start by reviewing “{excerpt(candidate)}”.' if candidate else ""
         findings.insert(0, Finding(
             id="headings-missing", check_id="headings", location="Main document",
             locator={"property": "heading_structure"},
-            evidence="No paragraphs with text use a heading style.",
-            barrier="Readers cannot jump between sections using heading navigation.",
-            suggestion="Apply Heading styles to the section titles in Word.",
+            evidence=f"None of the {text_paragraphs} text paragraphs use a heading style.{starting_point}",
+            barrier=f"Heading navigation offers no stops in these {text_paragraphs} paragraphs.",
+            suggestion="In Word, apply Heading 1 to the main section titles and Heading 2 to their subsections." + starting_point,
             severity="medium" if text_paragraphs >= 10 else "low",
             confidence="high", status="open", fixable="recommendation_only",
         ))

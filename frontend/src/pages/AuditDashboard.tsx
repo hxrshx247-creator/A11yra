@@ -1,3 +1,4 @@
+import { DocumentPreview } from "../components/DocumentPreview";
 import { PageHeading } from "../components/PageHeading";
 import { CheckList } from "../components/CheckList";
 import { ProgressMeter } from "../components/ProgressMeter";
@@ -5,7 +6,7 @@ import { ButtonLink } from "../components/Button";
 import { Button } from "../components/Button";
 import { Icon } from "../components/Icon";
 import { useEffect, useState } from "react";
-import { deleteDocument, getDocumentPreview, getReaderPreview } from "../api/client";
+import { deleteDocument, getReaderPreview } from "../api/client";
 import type { ReaderPreview } from "../types/contract";
 import { useAudit } from "../hooks/useAudit";
 import { usePageHeading } from "../hooks/usePageHeading";
@@ -70,7 +71,7 @@ export function AuditDashboard({ documentId }: { documentId: string }) {
               {deleteMessage && <p role="alert" className="form-error">{deleteMessage}</p>}
             </section>
           </div>
-          <DocumentPreview key={documentId} documentId={documentId} />
+          <DocumentPreview key={documentId} documentId={documentId} findings={audit.findings} />
           <CheckList audit={audit} canEdit={canEdit} />
           <section className="reader-preview" id="screen-reader-view" aria-labelledby="reader-preview-heading">
             <h2 id="reader-preview-heading">Screen reader view</h2>
@@ -95,39 +96,4 @@ export function AuditDashboard({ documentId }: { documentId: string }) {
       )}
     </main>
   );
-}
-
-function DocumentPreview({ documentId }: { documentId: string }) {
-  const [preview, setPreview] = useState<Awaited<ReturnType<typeof getDocumentPreview>>>();
-  const [loadingLayout, setLoadingLayout] = useState(true);
-  useEffect(() => {
-    const controller = new AbortController();
-    const readable = getDocumentPreview(documentId, controller.signal, false).then((result) => {
-      if (!controller.signal.aborted) setPreview((current) => current ?? result);
-    });
-    const formatted = getDocumentPreview(documentId, controller.signal).then((result) => {
-      if (!controller.signal.aborted) setPreview(result);
-    });
-    void Promise.allSettled([readable, formatted]).then(() => {
-      if (!controller.signal.aborted) setLoadingLayout(false);
-    });
-    return () => controller.abort();
-  }, [documentId]);
-
-  return <section className="document-preview" aria-labelledby="document-preview-heading">
-    <h2 id="document-preview-heading">Document preview</h2>
-    {preview ? <>
-      <p>{preview.filename} · Working copy</p>
-      {preview.pages?.length ? <>
-        <div className="document-pages" role="region" aria-label="Working copy page layout" tabIndex={0}>
-          {preview.pages.map((page, index) => <img key={index} src={page} alt={`Page ${index + 1}`} loading="lazy" />)}
-        </div>
-        {preview.truncated && <p>Showing the first {preview.pages.length} pages.</p>}
-        <p><a href="#screen-reader-view">Read this document in the screen reader view</a></p>
-      </> : <>
-        <p role="status">{loadingLayout ? "Loading formatted pages…" : "Showing a simplified preview."}</p>
-        <iframe title={`Working copy of ${preview.filename}`} sandbox="" srcDoc={preview.html} />
-      </>}
-    </> : <p role="status">{loadingLayout ? "Loading document preview…" : "The document preview could not be loaded."}</p>}
-  </section>;
 }

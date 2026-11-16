@@ -82,7 +82,7 @@ export function FixForm({ documentId, finding, type, onApplied }: {
             <label className="choice"><input type="radio" name="picture-purpose" checked={!decorative} onChange={() => setDecorative(false)} /> Conveys information</label>
             <label className="choice"><input type="radio" name="picture-purpose" checked={decorative} onChange={() => setDecorative(true)} /> Decorative</label>
           </fieldset>
-          <p id="repair-help">Use the location to inspect the picture in the original DOCX. Choose decorative when the picture adds no information.</p>
+          <p id="repair-help">Inspect the picture in the flagged preview. Choose Decorative when the picture adds no information.</p>
           <div className="repair-textarea" hidden={decorative}>
             <label htmlFor="repair-alt">Alt text (required)</label>
             <textarea id="repair-alt" name="alt_text" rows={4} required={!decorative} defaultValue={finding.preview ?? ""}
@@ -93,13 +93,13 @@ export function FixForm({ documentId, finding, type, onApplied }: {
       {type === "set_heading" && <>
         <p id="repair-help">Preview in context: “{finding.preview ?? finding.evidence}” Choose the correct outline level before applying.</p>
         <label htmlFor="heading-level">Convert to heading level</label>
-        <select id="heading-level" name="heading_level" defaultValue={/Heading ([1-6])/.exec(finding.suggestion)?.[1] ?? "2"}>
+        <select id="heading-level" name="heading_level" defaultValue={finding.suggested_value ?? /Heading ([1-6])/.exec(finding.suggestion)?.[1] ?? "2"}>
           {[1, 2, 3, 4, 5, 6].map((level) => <option key={level} value={level}>Heading {level}</option>)}
         </select>
       </>}
       {type === "set_table_header" && (
         <>
-          <p id="repair-help">Check the table in Word to confirm that its first row names the columns.</p>
+          <p id="repair-help">Check the flagged table to confirm that its first row names the columns.</p>
           <label className="choice"><input type="checkbox" required aria-describedby={describedBy} /> Mark the first row as the header (required)</label>
         </>
       )}
