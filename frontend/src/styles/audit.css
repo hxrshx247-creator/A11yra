@@ -129,6 +129,26 @@
   border-radius: .5rem;
 }
 .document-pages img { display: block; inline-size: auto; max-inline-size: 100%; background: white; }
+.flagged-word-page { position: relative; inline-size: 100%; }
+.flagged-word-page img { inline-size: 100%; block-size: auto; }
+.word-page-flag {
+  position: absolute;
+  transform: translate(-85%, -65%);
+  padding: .12rem .4rem;
+  border: 1px solid #735900;
+  border-radius: .3rem;
+  background: #fff0a3;
+  color: #342900;
+  font-size: .8rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.word-page-flag[data-selected="true"] {
+  z-index: 1;
+  outline: 2px solid #654700;
+  outline-offset: 2px;
+  background: #ffd85a;
+}
 .document-preview iframe {
   display: block;
   inline-size: 100%;

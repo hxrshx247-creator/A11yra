@@ -1,6 +1,8 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { getDocumentPreview } from "../api/client";
 import type { Finding } from "../types/contract";
+
+type Preview = Awaited<ReturnType<typeof getDocumentPreview>>;
 
 export function DocumentPreview({ documentId, findings, currentFindingId }: {
   documentId: string;
@@ -28,19 +30,38 @@ function FlaggedPreview({ documentId, findings, currentFindingId }: {
   currentFindingId?: string;
 }) {
   const frame = useRef<HTMLIFrameElement>(null);
-  const [preview, setPreview] = useState<Awaited<ReturnType<typeof getDocumentPreview>>>();
-  const [error, setError] = useState(false);
+  const pagesRegion = useRef<HTMLDivElement>(null);
+  const [readable, setReadable] = useState<Preview>();
+  const [formatted, setFormatted] = useState<Preview>();
+  const [pending, setPending] = useState(true);
   const [selected, setSelected] = useState(currentFindingId);
+  const positions = formatted?.positions;
+  const showPages = Boolean(formatted?.pages?.length && (!selected || positions?.[selected] || !readable));
 
   useEffect(() => {
     const controller = new AbortController();
-    getDocumentPreview(documentId, controller.signal, "flagged").then((result) => {
-      if (!controller.signal.aborted) setPreview(result);
-    }).catch(() => {
-      if (!controller.signal.aborted) setError(true);
+    const html = getDocumentPreview(documentId, controller.signal, "flagged").then((result) => {
+      if (!controller.signal.aborted) setReadable(result);
+    });
+    const pages = getDocumentPreview(documentId, controller.signal, "formatted-flags").then((result) => {
+      if (!controller.signal.aborted) setFormatted(result);
+    });
+    void Promise.allSettled([html, pages]).then(() => {
+      if (!controller.signal.aborted) setPending(false);
     });
     return () => controller.abort();
   }, [documentId]);
+
+  useLayoutEffect(() => {
+    const region = pagesRegion.current;
+    const position = selected && positions?.[selected];
+    if (!region || !position) return;
+    const page = region.children[position.page - 1];
+    if (page) {
+      const offset = page.getBoundingClientRect().top - region.getBoundingClientRect().top;
+      region.scrollTop += offset + (page.clientHeight * position.y / 100) - 30;
+    }
+  }, [showPages, positions, selected]);
 
   function showFlag(id: string, focus = false) {
     const mark = frame.current?.contentDocument?.getElementById("finding-" + id);
@@ -50,22 +71,47 @@ function FlaggedPreview({ documentId, findings, currentFindingId }: {
     view.scrollTo(0, view.scrollY + mark.getBoundingClientRect().top - 20);
   }
 
-  if (!preview) return <p role="status">{error ? "The flagged preview could not be loaded." : "Loading flagged preview…"}</p>;
+  const preview = readable ?? formatted;
+  if (!preview) return <p role="status">{pending ? "Loading flagged preview…" : "The flagged preview could not be loaded."}</p>;
 
   return <>
     <p>{preview.filename} · Working copy</p>
     {findings.length ? <ul className="preview-flags" aria-label="Findings in the preview">
-      {findings.map((finding) => (
+      {findings.map((finding, index) => (
         <li key={finding.id}>
           <button type="button" aria-pressed={selected === finding.id} onClick={() => {
             setSelected(finding.id);
-            showFlag(finding.id, true);
-          }}>⚑ {finding.location}</button>
+            if (!positions?.[finding.id]) showFlag(finding.id, true);
+          }}>⚑ {index + 1}. {finding.location}</button>
         </li>
       ))}
     </ul> : <p>No unresolved findings to flag.</p>}
-    <iframe ref={frame} title={`Flagged preview of ${preview.filename}`} sandbox="allow-same-origin" srcDoc={preview.html}
-      onLoad={() => { if (selected) showFlag(selected); }} />
+    {showPages ? <>
+      <div className="document-pages" role="region" aria-label="Flagged Word pages" tabIndex={0} ref={pagesRegion}>
+        {formatted?.pages?.map((page, index) => {
+          // The PNG header contains dimensions, which reserve each page's space before lazy loading.
+          const header = atob(page.slice("data:image/png;base64,".length, "data:image/png;base64,".length + 32));
+          const dimensions = new DataView(Uint8Array.from(header, (byte) => byte.charCodeAt(0)).buffer);
+          return <div key={index} className="flagged-word-page">
+            <img src={page} alt={`Page ${index + 1}`} loading="lazy"
+              width={dimensions.getUint32(16)} height={dimensions.getUint32(20)} />
+            {findings.map((finding, flagIndex) => {
+              const position = positions?.[finding.id];
+              return position?.page === index + 1 && <span key={finding.id} aria-hidden="true"
+                className="word-page-flag" data-selected={selected === finding.id}
+                style={{ left: `${position.x}%`, top: `${position.y}%` }}>⚑ {flagIndex + 1}</span>;
+            })}
+          </div>;
+        })}
+      </div>
+      {selected && !positions?.[selected] && <p role="status">This flag could not be placed on a formatted page.</p>}
+      {formatted?.truncated && <p>Showing the first {formatted.pages?.length} pages.</p>}
+    </> : <>
+      <p role="status">{pending ? "Loading formatted pages…" : "Showing a readable preview for this location."}</p>
+      <iframe ref={frame} title={`Flagged preview of ${preview.filename}`} sandbox="allow-same-origin"
+        srcDoc={readable?.html || formatted?.html}
+        onLoad={() => { if (selected) showFlag(selected); }} />
+    </>}
   </>;
 }
 function WordLayout({ documentId }: { documentId: string }) {

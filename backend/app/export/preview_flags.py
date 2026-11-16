@@ -13,7 +13,7 @@ def flag_label(finding: Finding) -> str:
 
 
 def insert_preview_flags(document, findings: list[Finding], prefix: str) -> None:
-    """Add temporary bookmarks at audit locations before HTML conversion."""
+    """Add temporary bookmarks at audit locations in the preview copy."""
     paragraphs = body_paragraphs(document)
     images = list(iter_picture_drawings(document))
     tables = body_tables(document)

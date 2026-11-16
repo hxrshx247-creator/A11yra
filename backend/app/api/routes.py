@@ -158,14 +158,14 @@ def document_preview(id: str, request: Request, response: Response, layout: bool
             contents = (state / "working.docx").read_bytes()
             flags = [finding for finding in store.read_audit(state).findings
                      if finding.status in {"open", "needs_review"}] if annotated else None
-        pages = render_preview_pages(contents) if layout and not annotated else []
+        pages, positions = render_preview_pages(contents, flags) if layout else ([], {})
         html = "" if pages else convert_docx_to_html(contents, flags=flags)
     except (OSError, ValueError):
         raise ApiError(500, "preview_failed", "The document preview could not be prepared.") from None
     response.headers["Cache-Control"] = "no-store"
     result = {"filename": document.filename, "html": html}
     if layout:
-        return {**result, "pages": pages[:MAX_PAGES], "truncated": len(pages) > MAX_PAGES}
+        return {**result, "pages": pages[:MAX_PAGES], "truncated": len(pages) > MAX_PAGES, "positions": positions}
     return result
 
 
