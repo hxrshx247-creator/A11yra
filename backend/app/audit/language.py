@@ -65,23 +65,31 @@ def check_language(document: Document) -> tuple[Check, list[Finding]]:
     languages = _body_languages(document, styles)
     findings: list[Finding] = []
     result: CheckResult = "passed"
-    summary = "The document has a default language."
+    summary = f"Default language in document properties: {default_tag}."
 
     if default_language is None:
         result = "issues"
         summary = "Set the default document language."
+        evidence = f"Default language: “{default_tag}” is unusable." if default_tag else "Default language: Not found."
+        suggested_language = next(iter(languages)) if len(languages) == 1 else None
+        suggestion = (
+            f'In Review fix, enter “{suggested_language}” if it matches the main text. This tag is already used in the document.'
+            if suggested_language else
+            "Read the opening section to confirm the main language, then enter its tag in Review fix. For example, enter “en” for English."
+        )
         findings.append(Finding(
             id="language-default-missing",
             check_id="language",
             location="Document default language",
             locator={"property": "default_language"},
-            evidence="The default run properties have no usable primary language tag.",
-            barrier="Without a document language, a screen reader may use the wrong pronunciation rules.",
-            suggestion="Choose the language used for most of the document.",
+            evidence=evidence,
+            barrier="A screen reader may use its own language setting to pronounce passages in this document that have no language tag.",
+            suggestion=suggestion,
             severity="high",
             confidence="high",
             status="open",
             fixable="teacher_approved",
+            suggested_value=suggested_language,
         ))
     else:
         languages.add(default_language)
@@ -89,7 +97,7 @@ def check_language(document: Document) -> tuple[Check, list[Finding]]:
     if len(languages) > 1:
         if result == "passed":
             result = "needs_review"
-            summary = "Review the languages marked in the document."
+            summary = f"Default language: {default_tag}. Review the other language tags in the text."
         else:
             summary = "Set the default language and review the language tags in the text."
         findings.append(Finding(
@@ -99,7 +107,7 @@ def check_language(document: Document) -> tuple[Check, list[Finding]]:
             locator={"property": "body_language_tags"},
             evidence=f"Language tags indicate more than one language ({', '.join(sorted(languages))}).",
             barrier="Screen readers can pronounce passages incorrectly if their language tags are wrong.",
-            suggestion="Check that each passage is tagged with the language it uses.",
+            suggestion=f"In Word, select passages tagged {', '.join(sorted(languages))} and use Review → Language → Set Proofing Language to correct any mismatches.",
             severity="medium",
             confidence="medium",
             status="needs_review",

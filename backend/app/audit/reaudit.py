@@ -63,14 +63,14 @@ def compare_audits(previous: Audit, fresh: Audit) -> AuditDiff:
     )
 
 
-def reaudit_document(store: DocumentStore, document_id: UUID) -> ReauditResponse | None:
+def reaudit_document(store: DocumentStore, document_id: UUID, filename: str = "") -> ReauditResponse | None:
     with store.locked_session(document_id) as session:
         if session is None:
             return None
         state = store.current_state(session)
         previous = store.read_audit(state)
         contents = (state / "working.docx").read_bytes()
-        audit = run_audit(Document(BytesIO(contents)), document_id)
+        audit = run_audit(Document(BytesIO(contents)), document_id, filename)
         diff = compare_audits(previous, audit)
         store.commit_state(session, state, contents, audit)
         return ReauditResponse(audit=audit, diff=diff)

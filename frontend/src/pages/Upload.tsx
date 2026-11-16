@@ -37,12 +37,12 @@ export function Upload() {
   const [message, setMessage] = useState("");
   const problem = validate(file) || message;
 
-  async function openSample(kind: "syllabus" | "lecture" | "messy" = "syllabus") {
+  async function openSample() {
     setPending(true);
     setMessage("");
     try {
-      const result = await uploadSample(kind);
-      location.assign(`/audit/${result.document_id}?sample=${kind}`);
+      const result = await uploadSample("messy");
+      location.assign(`/audit/${result.document_id}`);
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "The sample could not be opened.");
     } finally {
@@ -110,8 +110,7 @@ export function Upload() {
       </div>
       <div className="product-actions">
         <Button type="submit" aria-disabled={pending || Boolean(validate(file))}>Upload document</Button>
-        <Button variant="secondary" disabled={pending} onClick={() => openSample("lecture")}>Try the Stack and Queue lecture</Button>
-        <Button variant="secondary" disabled={pending} onClick={() => openSample("messy")}>Try the messy handout</Button>
+        <Button variant="secondary" disabled={pending} onClick={openSample}>Try a messy handout for demo/judging purposes</Button>
       </div>
       <p className="retention">Uploads are stored privately. Working files expire after {usage?.file_hours ?? 24} hours; you can delete a document sooner from its audit page. <a href="/privacy">Retention and privacy</a></p>
     </form>}

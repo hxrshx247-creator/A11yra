@@ -98,6 +98,23 @@
 .empty-findings { position: relative; overflow: hidden; padding: 1rem .85rem; border: 1px solid var(--line); border-radius: var(--radius); background: var(--wash); }
 .empty-findings p { margin: 0; position: relative; font-weight: 700; }
 .empty-findings .icon { color: var(--status-success-ink); }
+.document-preview {
+  margin-block-end: 2rem;
+  padding: clamp(1rem, 3vw, 1.5rem);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+.document-preview p { margin-block: .35rem .75rem; color: var(--ink-muted); overflow-wrap: anywhere; }
+.document-preview iframe {
+  display: block;
+  inline-size: 100%;
+  block-size: clamp(16rem, 42vh, 27rem);
+  border: 1px solid var(--line);
+  border-radius: .5rem;
+  background: white;
+  color-scheme: light;
+}
 .reader-preview { margin-block: 2rem; padding: clamp(1rem, 3vw, 1.5rem); border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); }
 .reader-preview h2 { margin-top: 0; }
 .reader-preview-tabs { display: flex; gap: .5rem; margin-block: .75rem; }

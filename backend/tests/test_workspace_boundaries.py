@@ -73,6 +73,7 @@ def test_workspace_route_matrix(client, fixture_paths, role):
         ("GET", f"{base}/documents", "viewer", 200, {}),
         ("GET", f"{base}/usage", "viewer", 200, {}),
         ("GET", f"{resource}/audit", "viewer", 200, {}),
+        ("GET", f"{resource}/preview", "viewer", 200, {}),
         ("GET", f"{resource}/history", "viewer", 200, {}),
         ("GET", f"{resource}/export/docx", "viewer", 200, {}),
         ("GET", f"{resource}/export/html", "viewer", 200, {}),

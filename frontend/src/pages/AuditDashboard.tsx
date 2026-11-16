@@ -5,7 +5,7 @@ import { ButtonLink } from "../components/Button";
 import { Button } from "../components/Button";
 import { Icon } from "../components/Icon";
 import { useEffect, useState } from "react";
-import { deleteDocument, getReaderPreview } from "../api/client";
+import { deleteDocument, getDocumentPreview, getReaderPreview } from "../api/client";
 import type { ReaderPreview } from "../types/contract";
 import { useAudit } from "../hooks/useAudit";
 import { usePageHeading } from "../hooks/usePageHeading";
@@ -17,7 +17,6 @@ export function AuditDashboard({ documentId }: { documentId: string }) {
   const heading = usePageHeading("Document audit");
   const { workspace } = useWorkspace();
   const canEdit = workspace.role !== "viewer";
-  const sample = new URLSearchParams(location.search).get("sample");
   const [version, setVersion] = useState<"original" | "repaired">(() =>
     new URLSearchParams(location.search).get("preview") === "repaired" ? "repaired" : "original");
   const [preview, setPreview] = useState<ReaderPreview>();
@@ -26,6 +25,7 @@ export function AuditDashboard({ documentId }: { documentId: string }) {
   useEffect(() => {
     const controller = new AbortController();
     setPreview(undefined);
+    setPreviewError("");
     getReaderPreview(documentId, version, controller.signal).then(setPreview).catch((reason) => {
       if (!controller.signal.aborted) setPreviewError(reason instanceof Error ? reason.message : "Preview unavailable.");
     });
@@ -64,9 +64,7 @@ export function AuditDashboard({ documentId }: { documentId: string }) {
               {deleteMessage && <p role="alert" className="form-error">{deleteMessage}</p>}
             </section>
           </div>
-          {sample && <p className="product-notice">{sample === "messy"
-            ? "This sample includes choices that need your judgment. Review the filename-style image description, outline levels, and table labels before deciding what to change."
-            : "Choose a finding to see what it means, then review a fix."}</p>}
+          <DocumentPreview key={documentId} documentId={documentId} />
           <CheckList audit={audit} canEdit={canEdit} />
           <section className="reader-preview" id="screen-reader-view" aria-labelledby="reader-preview-heading">
             <h2 id="reader-preview-heading">Screen reader view</h2>
@@ -91,4 +89,24 @@ export function AuditDashboard({ documentId }: { documentId: string }) {
       )}
     </main>
   );
+}
+
+function DocumentPreview({ documentId }: { documentId: string }) {
+  const [preview, setPreview] = useState<{ filename: string; html: string }>();
+  const [error, setError] = useState("");
+  useEffect(() => {
+    const controller = new AbortController();
+    getDocumentPreview(documentId, controller.signal).then(setPreview).catch((reason) => {
+      if (!controller.signal.aborted) setError(reason instanceof Error ? reason.message : "Preview unavailable.");
+    });
+    return () => controller.abort();
+  }, [documentId]);
+
+  return <section className="document-preview" aria-labelledby="document-preview-heading">
+    <h2 id="document-preview-heading">Document preview</h2>
+    {preview ? <>
+      <p>{preview.filename} · Working copy</p>
+      <iframe title={`Working copy of ${preview.filename}`} sandbox="" srcDoc={preview.html} />
+    </> : <p role="status">{error || "Loading document preview…"}</p>}
+  </section>;
 }

@@ -18,6 +18,7 @@ export interface Finding {
   status: FindingStatus;
   fixable: "teacher_approved" | "recommendation_only";
   preview?: string;
+  suggested_value?: string;
 }
 
 export interface Check {

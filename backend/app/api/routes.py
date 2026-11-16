@@ -15,6 +15,7 @@ from app.core.config import DOCX_MIME
 from app.core.errors import ApiError
 from app.core.validation import read_docx
 from app.export.docx_export import ExportPendingVerification, InvalidExport, prepare_docx_export
+from app.export.html_export import convert_docx_to_html
 from app.export.learner_download import prepare_learner_download
 from app.models import Audit, FixRequest, FixResponse, ReaderPreview, ReauditResponse, UploadResponse
 from app.repair.service import repair_document
@@ -58,14 +59,12 @@ def sample_document(request: Request, response: Response, kind: str = "syllabus"
                     db=Depends(get_db)) -> UploadResponse:
     if kind not in {"syllabus", "lecture", "messy"}:
         raise ApiError(422, "invalid_sample", "Choose the lecture, syllabus, or messy handout sample.")
-    fixture_name = {"syllabus": "pilot-syllabus.docx", "lecture": "stack-queue-lecture.docx",
-                    "messy": "messy-handout.docx"}[kind]
+    fixture_name = "pilot-syllabus.docx" if kind == "syllabus" else "stack-queue-lecture.docx"
     fixture = Path(__file__).resolve().parents[2] / "fixtures" / fixture_name
     from starlette.datastructures import Headers
 
     with fixture.open("rb") as source:
-        filename = {"syllabus": "Sample syllabus.docx", "lecture": "Stack and Queue lecture.docx",
-                    "messy": "Messy handout.docx"}[kind]
+        filename = "Sample syllabus.docx" if kind == "syllabus" else "Stack and Queue lecture.docx"
         file = UploadFile(source, filename=filename, headers=Headers({"content-type": DOCX_MIME}))
         return save_upload(request, response, file, context, db)
 
@@ -75,7 +74,7 @@ def save_upload(request, response, file, context, db):
     filename, contents, document = read_docx(file)
     check_upload(db, workspace, len(contents))
     document_id = uuid4()
-    audit = run_audit(document, document_id)
+    audit = run_audit(document, document_id, filename)
     current = now()
     state = request.app.state
     plan = workspace_plan(db, workspace)
@@ -143,6 +142,24 @@ def dismiss_heading_candidate(id: str, finding_id: str, request: Request, respon
     return Response(status_code=204, headers={"Cache-Control": "no-store"})
 
 
+@router.get("/documents/{id}/preview")
+def document_preview(id: str, request: Request, response: Response,
+                     context=Depends(require_role("viewer", document=True, active=True))) -> dict[str, str]:
+    document_id = parse_document_id(id)
+    store = request.app.state.documents
+    _, _, document = context
+    try:
+        with store.locked_session(document_id) as session:
+            if session is None:
+                raise document_not_found()
+            contents = (store.current_state(session) / "working.docx").read_bytes()
+        html = convert_docx_to_html(contents)
+    except (OSError, ValueError):
+        raise ApiError(500, "preview_failed", "The document preview could not be prepared.") from None
+    response.headers["Cache-Control"] = "no-store"
+    return {"filename": document.filename, "html": html}
+
+
 @router.get("/documents/{id}/reader-preview", response_model=ReaderPreview)
 def reader_preview(id: str, request: Request, response: Response, version: str = "original",
                   _context=Depends(require_role("viewer", document=True, active=True))) -> ReaderPreview:
@@ -195,7 +212,7 @@ def reaudit(id: str, request: Request, response: Response,
     user, workspace, doc = context
     lock_workspace(db, workspace)
     try:
-        result = reaudit_document(request.app.state.documents, document_id)
+        result = reaudit_document(request.app.state.documents, document_id, doc.filename)
     except (OSError, ValueError):
         raise ApiError(500, "storage_failed", "The server could not run a new audit. Try again.") from None
     if result is None:

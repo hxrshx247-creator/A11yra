@@ -70,6 +70,7 @@ export function FixForm({ documentId, finding, type, onApplied }: {
           <label htmlFor="repair-input">{field.label} (required)</label>
           <p id="repair-help">{field.help}</p>
           <input id="repair-input" name={field.name} type="text" required
+            defaultValue={finding.suggested_value}
             maxLength={type === "set_title" ? 255 : undefined}
             aria-describedby={describedBy} aria-invalid={error ? true : undefined} />
         </>

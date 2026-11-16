@@ -71,6 +71,11 @@ def test_reader_preview_uses_original_and_repaired_document_versions(client, fix
     assert "Language: not set" in [item["text"] for item in original["items"]]
     assert "Image: no description" in [item["text"] for item in original["items"]]
     assert "Link: click here" in [item["text"] for item in original["items"]]
+    preview = client.get(f"{url}/preview")
+    assert preview.status_code == 200
+    assert preview.headers["cache-control"] == "no-store"
+    assert preview.json()["filename"] == source.name
+    assert "<title>Word document</title>" in preview.json()["html"]
     for fix in [
         {"finding_id": "title-missing", "type": "set_title", "payload": {"title": "Study group"}},
         {"finding_id": "language-default-missing", "type": "set_language", "payload": {"lang": "en-IN"}},
@@ -84,18 +89,25 @@ def test_reader_preview_uses_original_and_repaired_document_versions(client, fix
     assert "Language: en-IN" in readout
     assert "Image: Attendance doubled." in readout
     assert "Link: Study group schedule" in readout
+    working = client.get(f"{url}/preview").json()
+    assert "<title>Study group</title>" in working["html"]
+    assert "Study group schedule" in working["html"]
 
 
-def test_messy_sample_preserves_judgment_findings(client):
+def test_messy_demo_opens_stack_and_queue_lecture(client):
     response = client.post("/api/documents/sample?kind=messy")
     assert response.status_code == 201
-    audit = Audit.model_validate(response.json()["audit"])
+    upload = UploadResponse.model_validate(response.json())
+    assert upload.filename == "Stack and Queue lecture.docx"
+    audit = upload.audit
     assert {"title-missing", "language-default-missing"}.issubset({finding.id for finding in audit.findings})
-    assert any(finding.id.startswith("heading-skip-") and finding.fixable == "teacher_approved" for finding in audit.findings)
-    assert any(finding.check_id == "images" and finding.status == "needs_review" for finding in audit.findings)
-    assert len([finding for finding in audit.findings if finding.check_id == "links"]) == 2
-    table = next(finding for finding in audit.findings if finding.check_id == "tables")
-    assert table.status == "open" and table.fixable == "teacher_approved"
+    title = next(finding for finding in audit.findings if finding.id == "title-missing")
+    assert title.suggested_value == "Stacks and Queues"
+    assert "Not found" in title.evidence
+    assert "Stacks and Queues" in title.suggestion
+    preview = client.get(f"/api/documents/{upload.document_id}/preview").json()
+    assert "Stacks and Queues" in preview["html"]
+    assert "Two Rules for Removing Items" in preview["html"]
 
 
 def test_heading_candidate_can_be_dismissed_as_not_a_heading(client, fixture_paths):

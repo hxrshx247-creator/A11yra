@@ -25,6 +25,7 @@ class Finding(BaseModel):
     status: FindingStatus
     fixable: Literal["teacher_approved", "recommendation_only"]
     preview: str | None = Field(default=None, exclude_if=lambda value: value is None)
+    suggested_value: str | None = Field(default=None, exclude_if=lambda value: value is None)
 
 
 class Check(BaseModel):
