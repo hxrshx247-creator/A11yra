@@ -118,7 +118,7 @@ export function Landing() {
         <div className="product-actions">
           <ButtonLink href="/upload">Upload a document</ButtonLink>
           {temporaryDemo
-            ? <Button variant="secondary" disabled={openingSample} onClick={() => void openSample()}>Try a sample audit</Button>
+            ? <Button variant="secondary" disabled={openingSample} onClick={() => void openSample()}>Try a messy handout</Button>
             : <ButtonLink variant="secondary" href="/account/signup?sample=1">Try a sample audit</ButtonLink>}
         </div>
         {openingSample && <p role="status">Opening the sample audit…</p>}

@@ -16,7 +16,7 @@ Project references: [accessibility test](docs/ACCESSIBILITY-TEST.md) · [securit
 docker compose up --build --wait
 ```
 
-Then open [A11yra](http://127.0.0.1:5173/). After signing in, select **Try a messy handout for demo/judging purposes** to audit the Stacks and Queues lecture. Use `docker compose down` to stop the app. `VITE_SHOW_ADVANCED=true` at build time shows the workspace, pricing, audit-history and account-management areas for extended demos.
+Then open [A11yra](http://127.0.0.1:5173/). After signing in, select **Try a messy handout** to audit the Stacks and Queues lecture. Use `docker compose down` to stop the app. `VITE_SHOW_ADVANCED=true` at build time shows the workspace, pricing, audit-history and account-management areas for extended demos.
 
 The manual Python and Node setup below is useful when you do not use Docker.
 
@@ -99,12 +99,12 @@ Open [http://127.0.0.1:5175/](http://127.0.0.1:5175/). Use that exact origin in 
 
 ## Try the four-minute demo
 
-1. Sign in and choose **Try a messy handout for demo/judging purposes**. The Stacks and Queues lecture has a missing title and language, an undescribed image, and a generic link.
+1. Sign in and choose **Try a messy handout**. The Stacks and Queues lecture has a missing title and language, an undescribed image, and a generic link.
 2. Open each finding, inspect the lecture, and approve a title, language, image description, and useful link label. The sample keeps the six-page stack-and-queue lesson content.
 3. Select **Re-audit document**, then **Run re-audit**. Review the verified changes and open **View repaired screen reader view**.
 4. Continue to export. Open the downloaded offline HTML and try **Reading settings** and the one-click presets.
 
-The six checks cover document title, default language, heading structure and levels, image descriptions, table headers, and link text. The audit page includes an HTML preview of the working copy and a linear screen-reader preview that can switch between the original and repaired versions.
+The six checks cover document title, default language, heading structure and levels, image descriptions, table headers, and link text. The audit page includes a page layout preview of the working copy and a linear screen-reader preview that can switch between the original and repaired versions.
 
 | Original screen reader view | Repaired screen reader view |
 | --- | --- |

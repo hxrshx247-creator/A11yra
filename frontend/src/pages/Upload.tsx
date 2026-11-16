@@ -110,7 +110,7 @@ export function Upload() {
       </div>
       <div className="product-actions">
         <Button type="submit" aria-disabled={pending || Boolean(validate(file))}>Upload document</Button>
-        <Button variant="secondary" disabled={pending} onClick={openSample}>Try a messy handout for demo/judging purposes</Button>
+        <Button variant="secondary" disabled={pending} onClick={openSample}>Try a messy handout</Button>
       </div>
       <p className="retention">Uploads are stored privately. Working files expire after {usage?.file_hours ?? 24} hours; you can delete a document sooner from its audit page. <a href="/privacy">Retention and privacy</a></p>
     </form>}

@@ -17,12 +17,18 @@ export function AuditDashboard({ documentId }: { documentId: string }) {
   const heading = usePageHeading("Document audit");
   const { workspace } = useWorkspace();
   const canEdit = workspace.role !== "viewer";
-  const [version, setVersion] = useState<"original" | "repaired">(() =>
-    new URLSearchParams(location.search).get("preview") === "repaired" ? "repaired" : "original");
+  const [selectedVersion, setVersion] = useState<"original" | "repaired" | null>(() => {
+    const requested = new URLSearchParams(location.search).get("preview");
+    return requested === "repaired" || requested === "original" ? requested : null;
+  });
+  const version = selectedVersion ?? (audit?.findings.some(
+    (finding) => finding.status === "fixed_unverified" || finding.status === "verified_fixed",
+  ) ? "repaired" : "original");
   const [preview, setPreview] = useState<ReaderPreview>();
   const [previewError, setPreviewError] = useState("");
   const [deleteMessage, setDeleteMessage] = useState("");
   useEffect(() => {
+    if (!audit) return;
     const controller = new AbortController();
     setPreview(undefined);
     setPreviewError("");
@@ -30,7 +36,7 @@ export function AuditDashboard({ documentId }: { documentId: string }) {
       if (!controller.signal.aborted) setPreviewError(reason instanceof Error ? reason.message : "Preview unavailable.");
     });
     return () => controller.abort();
-  }, [documentId, version]);
+  }, [audit, documentId, version]);
   async function deleteUpload() {
     if (!window.confirm("Delete this document and its stored working files?")) return;
     try {
@@ -70,7 +76,7 @@ export function AuditDashboard({ documentId }: { documentId: string }) {
             <h2 id="reader-preview-heading">Screen reader view</h2>
             <div className="reader-preview-tabs" role="group" aria-label="Preview version">
               <button type="button" aria-pressed={version === "original"} onClick={() => setVersion("original")}>Original</button>
-              <button type="button" aria-pressed={version === "repaired"} onClick={() => setVersion("repaired")}>Repaired</button>
+              <button type="button" aria-pressed={version === "repaired"} onClick={() => setVersion("repaired")}>Working copy</button>
             </div>
             <p className="preview-caveat">Approximation of linear screen reader output; real behavior varies by software.</p>
             {previewError && <p role="status">{previewError}</p>}
@@ -92,7 +98,7 @@ export function AuditDashboard({ documentId }: { documentId: string }) {
 }
 
 function DocumentPreview({ documentId }: { documentId: string }) {
-  const [preview, setPreview] = useState<{ filename: string; html: string }>();
+  const [preview, setPreview] = useState<Awaited<ReturnType<typeof getDocumentPreview>>>();
   const [error, setError] = useState("");
   useEffect(() => {
     const controller = new AbortController();
@@ -106,7 +112,16 @@ function DocumentPreview({ documentId }: { documentId: string }) {
     <h2 id="document-preview-heading">Document preview</h2>
     {preview ? <>
       <p>{preview.filename} · Working copy</p>
-      <iframe title={`Working copy of ${preview.filename}`} sandbox="" srcDoc={preview.html} />
+      {preview.pages?.length ? <>
+        <div className="document-pages" role="region" aria-label="Working copy page layout" tabIndex={0}>
+          {preview.pages.map((page, index) => <img key={index} src={page} alt={`Page ${index + 1}`} loading="lazy" />)}
+        </div>
+        {preview.truncated && <p>Showing the first {preview.pages.length} pages.</p>}
+        <p><a href="#screen-reader-view">Read this document in the screen reader view</a></p>
+      </> : <>
+        <p>Showing a simplified preview.</p>
+        <iframe title={`Working copy of ${preview.filename}`} sandbox="" srcDoc={preview.html} />
+      </>}
     </> : <p role="status">{error || "Loading document preview…"}</p>}
   </section>;
 }

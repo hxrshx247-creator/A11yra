@@ -16,6 +16,7 @@ from app.core.errors import ApiError
 from app.core.validation import read_docx
 from app.export.docx_export import ExportPendingVerification, InvalidExport, prepare_docx_export
 from app.export.html_export import convert_docx_to_html
+from app.export.page_preview import MAX_PAGES, render_preview_pages
 from app.export.learner_download import prepare_learner_download
 from app.models import Audit, FixRequest, FixResponse, ReaderPreview, ReauditResponse, UploadResponse
 from app.repair.service import repair_document
@@ -143,8 +144,8 @@ def dismiss_heading_candidate(id: str, finding_id: str, request: Request, respon
 
 
 @router.get("/documents/{id}/preview")
-def document_preview(id: str, request: Request, response: Response,
-                     context=Depends(require_role("viewer", document=True, active=True))) -> dict[str, str]:
+def document_preview(id: str, request: Request, response: Response, layout: bool = False,
+                     context=Depends(require_role("viewer", document=True, active=True))) -> dict:
     document_id = parse_document_id(id)
     store = request.app.state.documents
     _, _, document = context
@@ -153,11 +154,15 @@ def document_preview(id: str, request: Request, response: Response,
             if session is None:
                 raise document_not_found()
             contents = (store.current_state(session) / "working.docx").read_bytes()
-        html = convert_docx_to_html(contents)
+        pages = render_preview_pages(contents) if layout else []
+        html = "" if pages else convert_docx_to_html(contents)
     except (OSError, ValueError):
         raise ApiError(500, "preview_failed", "The document preview could not be prepared.") from None
     response.headers["Cache-Control"] = "no-store"
-    return {"filename": document.filename, "html": html}
+    result = {"filename": document.filename, "html": html}
+    if layout:
+        return {**result, "pages": pages[:MAX_PAGES], "truncated": len(pages) > MAX_PAGES}
+    return result
 
 
 @router.get("/documents/{id}/reader-preview", response_model=ReaderPreview)

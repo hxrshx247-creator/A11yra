@@ -10,9 +10,10 @@ from docx.enum.style import WD_STYLE_TYPE
 from app.audit._body import body_paragraphs, visible_text, word_flag, word_value
 from app.audit.headings import _heading_level, _style_chain
 from app.audit.images import DECORATIVE_TAG, iter_picture_properties
-from app.audit.language import DEFAULT_LANGUAGE_PATH
+from app.audit.language import DEFAULT_LANGUAGE_PATH, primary_language
 from app.audit.links import iter_link_elements, link_label_issue
 from app.audit.tables import body_tables, table_rows
+from app.audit.title import PLACEHOLDER_TITLE
 from app.models import Audit, ReaderItem, ReaderPreview
 
 
@@ -36,13 +37,15 @@ def _language(document: WordDocument) -> str | None:
 def build_reader_preview(document: WordDocument, audit: Audit, version: str) -> ReaderPreview:
     findings = audit.findings
     title = document.core_properties.title.strip()
+    placeholder = title.casefold() == PLACEHOLDER_TITLE
     items = [ReaderItem(type="title", text=f"Document title: {title or 'none (file name will be read instead)'}",
-                        issue="missing" if not title else None,
-                        finding_id="title-missing" if not title else None)]
+                        issue="needs_review" if placeholder else "missing" if not title else None,
+                        finding_id="title-missing" if placeholder or not title else None)]
     lang = _language(document)
+    usable_lang = primary_language(lang)
     items.append(ReaderItem(type="language", text=f"Language: {lang or 'not set'}",
-                            issue="missing" if not lang else None,
-                            finding_id="language-default-missing" if not lang else None))
+                            issue="missing" if not usable_lang else None,
+                            finding_id="language-default-missing" if not usable_lang else None))
 
     paragraph_numbers = {element: index for index, element in enumerate(body_paragraphs(document), 1)}
     table_numbers = {element: index for index, element in enumerate(body_tables(document), 1)}
@@ -73,7 +76,8 @@ def build_reader_preview(document: WordDocument, audit: Audit, version: str) -> 
                 level = _heading_level(_style_chain(style)) if style else None
                 paragraph_finding = next((finding for finding in findings
                     if finding.check_id == "headings" and finding.locator.get("paragraph_index") == para_index - 1
-                    and finding.status not in {"verified_fixed", "dismissed"}), None)
+                    and finding.status != "dismissed"
+                    and (version == "original" or finding.status not in {"fixed_unverified", "verified_fixed"})), None)
                 if level:
                     items.append(ReaderItem(type="heading", text=f"Heading level {level}: {text}",
                                             issue="review" if paragraph_finding else None,

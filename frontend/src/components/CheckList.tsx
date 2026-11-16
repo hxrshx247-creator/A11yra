@@ -39,6 +39,11 @@ export function CheckList({ audit, canEdit }: { audit: Audit; canEdit: boolean }
         <h2 id="checks-heading">Checks</h2>
         <div className="check-list" role="tablist" aria-labelledby="checks-heading" aria-orientation="vertical">
           {checks.map((check, index) => {
+            const activeFindings = findings.filter(
+              (finding) => check.finding_ids.includes(finding.id) && finding.status !== "verified_fixed",
+            );
+            const awaitingVerification = activeFindings.length > 0 &&
+              activeFindings.every((finding) => finding.status === "fixed_unverified");
             return (
               <button
                 className="check-card"
@@ -54,7 +59,7 @@ export function CheckList({ audit, canEdit }: { audit: Audit; canEdit: boolean }
                 onKeyDown={(event) => handleTabKey(event, index)}
               >
                 <span className="check-label">{check.label}</span>
-                <StatusBadge status={check.result} />
+                <StatusBadge status={awaitingVerification ? "fixed_unverified" : check.result} />
               </button>
             );
           })}
