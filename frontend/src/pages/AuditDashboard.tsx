@@ -99,11 +99,17 @@ export function AuditDashboard({ documentId }: { documentId: string }) {
 
 function DocumentPreview({ documentId }: { documentId: string }) {
   const [preview, setPreview] = useState<Awaited<ReturnType<typeof getDocumentPreview>>>();
-  const [error, setError] = useState("");
+  const [loadingLayout, setLoadingLayout] = useState(true);
   useEffect(() => {
     const controller = new AbortController();
-    getDocumentPreview(documentId, controller.signal).then(setPreview).catch((reason) => {
-      if (!controller.signal.aborted) setError(reason instanceof Error ? reason.message : "Preview unavailable.");
+    const readable = getDocumentPreview(documentId, controller.signal, false).then((result) => {
+      if (!controller.signal.aborted) setPreview((current) => current ?? result);
+    });
+    const formatted = getDocumentPreview(documentId, controller.signal).then((result) => {
+      if (!controller.signal.aborted) setPreview(result);
+    });
+    void Promise.allSettled([readable, formatted]).then(() => {
+      if (!controller.signal.aborted) setLoadingLayout(false);
     });
     return () => controller.abort();
   }, [documentId]);
@@ -119,9 +125,9 @@ function DocumentPreview({ documentId }: { documentId: string }) {
         {preview.truncated && <p>Showing the first {preview.pages.length} pages.</p>}
         <p><a href="#screen-reader-view">Read this document in the screen reader view</a></p>
       </> : <>
-        <p>Showing a simplified preview.</p>
+        <p role="status">{loadingLayout ? "Loading formatted pages…" : "Showing a simplified preview."}</p>
         <iframe title={`Working copy of ${preview.filename}`} sandbox="" srcDoc={preview.html} />
       </>}
-    </> : <p role="status">{error || "Loading document preview…"}</p>}
+    </> : <p role="status">{loadingLayout ? "Loading document preview…" : "The document preview could not be loaded."}</p>}
   </section>;
 }

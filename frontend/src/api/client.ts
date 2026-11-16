@@ -111,10 +111,10 @@ export async function getReaderPreview(documentId: string, version: "original" |
   return readJson(response, "The screen reader preview could not be loaded.");
 }
 
-export async function getDocumentPreview(documentId: string, signal: AbortSignal): Promise<{
-  filename: string; html: string; pages: string[]; truncated: boolean;
+export async function getDocumentPreview(documentId: string, signal: AbortSignal, layout = true): Promise<{
+  filename: string; html: string; pages?: string[]; truncated?: boolean;
 }> {
-  const response = await apiFetch(`/api/documents/${encodeURIComponent(documentId)}/preview?layout=true`, { signal });
+  const response = await apiFetch(`/api/documents/${encodeURIComponent(documentId)}/preview?layout=${layout}`, { signal });
   return readJson(response, "The document preview could not be loaded.");
 }
 
