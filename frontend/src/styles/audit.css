@@ -116,7 +116,7 @@
   color: var(--ink);
   text-align: start;
 }
-.preview-flags button[aria-pressed="true"] { background: var(--ink); color: var(--surface); }
+.preview-flags button[aria-pressed="true"] { background: #ffd174; color: #352300; border-color: #986000; }
 .document-pages {
   display: grid;
   justify-items: center;
@@ -129,8 +129,19 @@
   border-radius: .5rem;
 }
 .document-pages img { display: block; inline-size: auto; max-inline-size: 100%; background: white; }
-.flagged-word-page { position: relative; inline-size: 100%; }
+.flagged-word-page { position: relative; inline-size: 100%; container-type: inline-size; }
 .flagged-word-page img { inline-size: 100%; block-size: auto; }
+.word-page-location { position: absolute; pointer-events: none; }
+.word-page-highlight {
+  position: absolute;
+  inset-block-start: -.35rem;
+  inset-inline-start: -.2rem;
+  block-size: 1.65rem;
+  border: 2px solid #c57900;
+  border-radius: .25rem;
+  background: rgb(255 183 46 / 28%);
+}
+.word-page-highlight[data-image="true"] { block-size: clamp(2.5rem, 16cqw, 10rem); }
 .word-page-flag {
   position: absolute;
   transform: translate(-85%, -65%);
@@ -147,7 +158,7 @@
   z-index: 1;
   outline: 2px solid #654700;
   outline-offset: 2px;
-  background: #ffd85a;
+  background: #ffd174;
 }
 .document-preview iframe {
   display: block;

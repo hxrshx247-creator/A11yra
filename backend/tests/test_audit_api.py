@@ -123,6 +123,36 @@ def test_messy_demo_opens_stack_and_queue_lecture(client):
     assert "Two Rules for Removing Items" in preview["html"]
 
 
+def test_formatted_preview_reuses_pages_until_working_copy_changes(client, monkeypatch):
+    from app.api import routes
+
+    renders = []
+
+    def render(contents, flags):
+        renders.append(contents)
+        return ["data:image/png;base64,preview"], {
+            flag.id: {"page": 1, "x": 12, "y": 10} for flag in flags
+        }
+
+    monkeypatch.setattr(routes, "bundled_preview", lambda *_: None)
+    monkeypatch.setattr(routes, "render_preview_pages", render)
+    upload = client.post("/api/documents/sample?kind=messy").json()
+    url = f"/api/documents/{upload['document_id']}"
+    preview_url = f"{url}/preview?layout=true&annotated=true"
+
+    first = client.get(preview_url).json()
+    assert "title-missing" in first["positions"]
+    assert client.get(preview_url).json() == first
+    assert len(renders) == 1
+
+    response = client.post(f"{url}/fixes", json={"fixes": [
+        {"finding_id": "title-missing", "type": "set_title", "payload": {"title": "Stacks and Queues"}},
+    ]})
+    assert response.status_code == 200
+    assert "title-missing" not in client.get(preview_url).json()["positions"]
+    assert len(renders) == 2 and renders[0] != renders[1]
+
+
 def test_heading_candidate_can_be_dismissed_as_not_a_heading(client, fixture_paths):
     source = fixture_paths[0]
     upload = client.post("/api/documents", files={"file": (source.name, source.read_bytes(), DOCX_MIME)}).json()

@@ -79,7 +79,7 @@ class DocumentStore:
             raise
 
         if previous_state == session:
-            for filename in ("working.docx", "audit.json"):
+            for filename in ("working.docx", "audit.json", "layout-preview.json", "flagged-preview.json"):
                 with suppress(OSError):
                     (session / filename).unlink()
         else:

@@ -1,5 +1,7 @@
 from datetime import timedelta
+from contextlib import suppress
 from io import BytesIO
+import json
 from pathlib import Path
 from typing import Annotated
 from uuid import UUID, uuid4
@@ -16,7 +18,7 @@ from app.core.errors import ApiError
 from app.core.validation import read_docx
 from app.export.docx_export import ExportPendingVerification, InvalidExport, prepare_docx_export
 from app.export.html_export import convert_docx_to_html
-from app.export.page_preview import MAX_PAGES, render_preview_pages
+from app.export.page_preview import MAX_PAGES, bundled_preview, render_preview_pages
 from app.export.learner_download import prepare_learner_download
 from app.models import Audit, FixRequest, FixResponse, ReaderPreview, ReauditResponse, UploadResponse
 from app.repair.service import repair_document
@@ -150,6 +152,8 @@ def document_preview(id: str, request: Request, response: Response, layout: bool
     document_id = parse_document_id(id)
     store = request.app.state.documents
     _, _, document = context
+    cache_name = "flagged-preview.json" if annotated else "layout-preview.json"
+    cached = {}
     try:
         with store.locked_session(document_id) as session:
             if session is None:
@@ -158,7 +162,25 @@ def document_preview(id: str, request: Request, response: Response, layout: bool
             contents = (state / "working.docx").read_bytes()
             flags = [finding for finding in store.read_audit(state).findings
                      if finding.status in {"open", "needs_review"}] if annotated else None
-        pages, positions = render_preview_pages(contents, flags) if layout else ([], {})
+            if layout:
+                with suppress(OSError, ValueError):
+                    cached = json.loads((state / cache_name).read_bytes())
+        flag_ids = [finding.id for finding in flags or []]
+        pages, positions = [], {}
+        if layout:
+            if cached.get("flags") == flag_ids:
+                pages, positions = cached["pages"], cached["positions"]
+            else:
+                bundled = bundled_preview(contents, flags)
+                pages, positions = bundled if bundled is not None else render_preview_pages(contents, flags)
+                if pages and bundled is None:
+                    with store.locked_session(document_id) as session:
+                        if session is not None and store.current_state(session) == state:
+                            with suppress(OSError):
+                                (state / cache_name).write_text(
+                                    json.dumps({"flags": flag_ids, "pages": pages, "positions": positions}),
+                                    encoding="utf-8",
+                                )
         html = "" if pages else convert_docx_to_html(contents, flags=flags)
     except (OSError, ValueError):
         raise ApiError(500, "preview_failed", "The document preview could not be prepared.") from None

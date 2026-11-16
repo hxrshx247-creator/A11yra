@@ -1,7 +1,10 @@
 """Render a working DOCX as page images for the audit."""
 
 from base64 import b64encode
+from functools import lru_cache
+from hashlib import sha256
 from io import BytesIO
+import json
 from pathlib import Path
 import re
 from shutil import which
@@ -20,6 +23,24 @@ from app.models import Finding
 
 MAX_PAGES = 20
 _renderer = BoundedSemaphore(1)
+BUNDLED_PREVIEW = Path(__file__).resolve().parents[2] / "fixtures" / "stack-queue-preview.json"
+
+
+@lru_cache(maxsize=1)
+def _read_bundled_preview() -> dict:
+    return json.loads(BUNDLED_PREVIEW.read_bytes()) if BUNDLED_PREVIEW.is_file() else {}
+
+
+def bundled_preview(contents: bytes, flags: list[Finding] | None) -> tuple[list[str], dict] | None:
+    # Only the public demo fixture is eligible for the shared preview.
+    preview = _read_bundled_preview()
+    if sha256(contents).hexdigest() != preview.get("digest"):
+        return None
+    wanted = {finding.id for finding in flags or []}
+    positions = preview["positions"]
+    if wanted - positions.keys():
+        return None
+    return preview["pages"], {key: positions[key] for key in wanted}
 
 
 def _can_render_offline(contents: bytes) -> bool:
@@ -92,7 +113,7 @@ def render_preview_pages(contents: bytes, flags: list[Finding] | None = None) ->
                  output_filter, "--outdir", directory, str(source)],
                 check=True, timeout=20, stdin=DEVNULL, stdout=DEVNULL, stderr=DEVNULL)
             pdf = folder / "document.pdf"
-            run([rasterizer, "-l", str(MAX_PAGES + 1), "-scale-to", "1400", "-png",
+            run([rasterizer, "-l", str(MAX_PAGES + 1), "-scale-to", "1200", "-png",
                  str(pdf), str(folder / "page")],
                 check=True, timeout=12, stdin=DEVNULL, stdout=DEVNULL, stderr=DEVNULL)
             pages = sorted(folder.glob("page-*.png"), key=lambda path: int(path.stem.split("-")[-1]))

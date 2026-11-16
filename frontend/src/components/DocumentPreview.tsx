@@ -97,9 +97,16 @@ function FlaggedPreview({ documentId, findings, currentFindingId }: {
               width={dimensions.getUint32(16)} height={dimensions.getUint32(20)} />
             {findings.map((finding, flagIndex) => {
               const position = positions?.[finding.id];
-              return position?.page === index + 1 && <span key={finding.id} aria-hidden="true"
-                className="word-page-flag" data-selected={selected === finding.id}
-                style={{ left: `${position.x}%`, top: `${position.y}%` }}>⚑ {flagIndex + 1}</span>;
+              if (position?.page !== index + 1) return null;
+              const active = selected === finding.id;
+              const documentWide = "property" in finding.locator;
+              return <div key={finding.id} aria-hidden="true" className="word-page-location"
+                style={{ left: `${position.x}%`, top: `${position.y}%` }}>
+                {active && !documentWide && <span className="word-page-highlight"
+                  data-image={finding.check_id === "images"}
+                  style={{ width: `${Math.max(8, 92 - position.x)}cqw` }} />}
+                <span className="word-page-flag" data-selected={active}>⚑ {flagIndex + 1}</span>
+              </div>;
             })}
           </div>;
         })}

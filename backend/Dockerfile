@@ -25,5 +25,6 @@ WORKDIR /app/backend
 CMD ["sh", "-c", "alembic upgrade head && exec uvicorn app.main:app --host 0.0.0.0 --port \"$PORT\" --workers 1 --no-access-log"]
 
 FROM api AS demo
+RUN python -m scripts.build_demo_preview
 COPY --from=frontend /app/frontend/dist /app/frontend/dist
 ENV A11YRA_FRONTEND_DIR=/app/frontend/dist
