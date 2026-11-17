@@ -21,8 +21,9 @@ function launch(program, args, cwd, env, { quiet = false } = {}) {
 }
 
 async function waitFor(url, services) {
-  for (let attempt = 0; attempt < 100; attempt += 1) {
-    const response = await fetch(url).catch(() => null);
+  const signal = AbortSignal.timeout(15_000);
+  while (!signal.aborted) {
+    const response = await fetch(url, { signal }).catch(() => null);
     if (response?.ok) return;
     if (services.some(({ child }) => child.exitCode !== null)) throw new Error("An A11yra service exited early.");
     await new Promise((resolve) => setTimeout(resolve, 150));
@@ -53,6 +54,7 @@ async function runSpec(spec) {
     services.push(launch(process.execPath, ["node_modules/vite/bin/vite.js", ...viteMode, "--port", webPort], join(root, "frontend"), env));
     await waitFor(`http://127.0.0.1:${apiPort}/api/ready`, services);
     await waitFor(teacherUrl, services);
+    if (viteMode.length === 0) await waitFor(`${teacherUrl}/api/ready`, services);
     return await launch(process.execPath, ["--test", spec], join(root, "reader"), env).done;
   } finally {
     for (const { child } of services) child.kill();
