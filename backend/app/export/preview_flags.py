@@ -9,6 +9,7 @@ from app.models import Finding
 
 
 def flag_label(finding: Finding) -> str:
+    """Return the concise label for a preview flag."""
     return {"title": "Document title", "language": "Document language"}.get(finding.check_id, finding.location)
 
 
@@ -58,6 +59,7 @@ def insert_preview_flags(document, findings: list[Finding], prefix: str) -> None
 
 
 def render_preview_flags(page, findings: list[Finding], prefix: str) -> None:
+    """Replace preview markers with labels tied to the audit findings."""
     for link in page.article.find_all("a", href=True):
         if not link["href"].startswith("#"):
             del link["href"]

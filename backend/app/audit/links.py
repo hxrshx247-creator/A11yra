@@ -11,6 +11,7 @@ GENERIC_LABELS = {"click here", "here", "link", "read more"}
 
 
 def iter_link_elements(paragraph):
+    """Yield links in a paragraph in document order."""
     elements = paragraph.xpath(f".//*[self::w:hyperlink or self::w:fldSimple][{BODY_CONTENT}]")
     for element in elements:
         if element.tag == qn("w:hyperlink") or re.match(
@@ -20,6 +21,7 @@ def iter_link_elements(paragraph):
 
 
 def link_label_issue(label: str) -> str | None:
+    """Describe the problem with a generic or empty link label, if any."""
     normalized = " ".join(label.split()).strip(" .?!…:;()[]").casefold()
     if normalized in GENERIC_LABELS:
         return "generic"
@@ -46,6 +48,7 @@ def _destination(document, link):
 
 
 def check_links(document: Document) -> tuple[Check, list[Finding]]:
+    """Check whether links in the document have descriptive labels."""
     findings: list[Finding] = []
     link_count = 0
     for paragraph_index, paragraph in enumerate(body_paragraphs(document)):

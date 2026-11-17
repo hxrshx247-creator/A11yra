@@ -20,6 +20,7 @@ def _val(element, path: str) -> str | None:
 
 
 def primary_language(tag: str | None) -> str | None:
+    """Return the lowercase primary subtag when it identifies a language."""
     if tag is None or re.fullmatch(r"[a-z]{2,8}(?:-[a-z0-9]{1,8})*", tag, re.IGNORECASE) is None:
         return None
     primary = tag.split("-", 1)[0].lower()

@@ -35,6 +35,7 @@ def _language(document: WordDocument) -> str | None:
 
 
 def build_reader_preview(document: WordDocument, audit: Audit, version: str) -> ReaderPreview:
+    """Build a linear preview of the document with audit findings in context."""
     findings = audit.findings
     title = document.core_properties.title.strip()
     placeholder = title.casefold() == PLACEHOLDER_TITLE

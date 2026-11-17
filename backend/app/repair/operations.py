@@ -47,6 +47,7 @@ def _child(parent, tag: str, *, first: bool = False):
 
 
 def set_title(document: Document, _finding: Finding, payload: FixPayload) -> None:
+    """Set the document title in its core properties."""
     title = _required_text(payload.title, "title")
     if len(title) > 255:
         raise RepairRejected("Use a document title of 255 characters or fewer.")
@@ -54,6 +55,7 @@ def set_title(document: Document, _finding: Finding, payload: FixPayload) -> Non
 
 
 def set_language(document: Document, _finding: Finding, payload: FixPayload) -> None:
+    """Set the default proofing language for the document."""
     language = (payload.lang or "").strip()
     if primary_language(language) is None:
         raise RepairRejected("Choose a language tag such as en, en-IN, or hi.")
@@ -69,6 +71,7 @@ def set_language(document: Document, _finding: Finding, payload: FixPayload) -> 
 
 
 def set_alt_text(document: Document, finding: Finding, payload: FixPayload) -> None:
+    """Set the selected picture's alt text or mark it decorative."""
     if payload.decorative and (payload.alt_text or "").strip():
         raise RepairRejected("Choose decorative or provide alt text.")
     description = None if payload.decorative else _required_text(payload.alt_text, "alt")
@@ -96,6 +99,7 @@ def set_alt_text(document: Document, finding: Finding, payload: FixPayload) -> N
 
 
 def set_link_text(document: Document, finding: Finding, payload: FixPayload) -> None:
+    """Replace the selected link's visible label while keeping its destination."""
     label = _required_text(payload.new_text, "link label")
     if link_label_issue(label) is not None:
         raise RepairRejected("Use a label that describes where the link goes.")
@@ -117,6 +121,7 @@ def set_link_text(document: Document, finding: Finding, payload: FixPayload) -> 
 
 
 def set_table_header(document: Document, finding: Finding, _payload: FixPayload) -> None:
+    """Mark the first row of the selected table as a header."""
     tables = body_tables(document)
     index = _index(finding, "table_index")
     rows = table_rows(tables[index]) if index < len(tables) else []
@@ -134,6 +139,7 @@ def set_table_header(document: Document, finding: Finding, _payload: FixPayload)
 
 
 def set_heading(document: Document, finding: Finding, payload: FixPayload) -> None:
+    """Apply the selected heading level to the target paragraph."""
     level = payload.heading_level
     if level is None or not 1 <= level <= 6:
         raise RepairRejected("Choose a heading level from 1 to 6.")

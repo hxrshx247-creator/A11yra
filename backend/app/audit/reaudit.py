@@ -11,6 +11,7 @@ from app.models import Audit, AuditDiff, CheckId, Finding, ReauditResponse
 
 
 def compare_audits(previous: Audit, fresh: Audit) -> AuditDiff:
+    """Reconcile fresh findings with previous repairs and review decisions."""
     old_by_id = {finding.id: finding for finding in previous.findings}
     fresh_ids = {finding.id for finding in fresh.findings}
     evaluated = {check.id for check in fresh.checks if check.result != "not_evaluated"}
@@ -64,6 +65,7 @@ def compare_audits(previous: Audit, fresh: Audit) -> AuditDiff:
 
 
 def reaudit_document(store: DocumentStore, document_id: UUID, filename: str = "") -> ReauditResponse | None:
+    """Audit the saved working copy and store its results and comparison."""
     with store.locked_session(document_id) as session:
         if session is None:
             return None

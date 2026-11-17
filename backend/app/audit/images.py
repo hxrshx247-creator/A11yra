@@ -13,6 +13,7 @@ def _is_decorative(properties) -> bool:
 
 
 def iter_picture_drawings(document: Document):
+    """Yield each picture drawing with its paragraph index."""
     for paragraph_index, paragraph in enumerate(body_paragraphs(document)):
         drawings = paragraph.xpath(
             f".//w:drawing[{BODY_CONTENT}]/*[self::wp:inline or self::wp:anchor]"
@@ -23,11 +24,13 @@ def iter_picture_drawings(document: Document):
 
 
 def iter_picture_properties(document: Document):
+    """Yield each picture's paragraph index and drawing properties."""
     for paragraph_index, drawing in iter_picture_drawings(document):
         yield paragraph_index, drawing.find(qn("wp:docPr"))
 
 
 def check_images(document: Document) -> tuple[Check, list[Finding]]:
+    """Check pictures for descriptions or decorative marking."""
     findings: list[Finding] = []
     image_count = 0
     paragraphs = body_paragraphs(document)

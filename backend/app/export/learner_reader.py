@@ -25,6 +25,7 @@ def _inline_policy(stylesheet: str, javascript: str) -> str:
 
 def published_reader_policy(snapshot: bytes) -> str:
     # Published files contain the reader assets from the day they were created.
+    """Build the content security policy for a published reader snapshot."""
     page = BeautifulSoup(snapshot, "html.parser", from_encoding="utf-8")
     if page.style is None or page.script is None:
         return "default-src 'none'; frame-ancestors 'none'"

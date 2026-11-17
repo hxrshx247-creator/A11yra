@@ -16,6 +16,7 @@ CHECKS = (check_language, check_headings, check_images, check_tables, check_link
 
 
 def run_audit(document: Document, document_id: UUID, filename: str = "") -> Audit:
+    """Run all document checks and build the audit with progress and findings."""
     title_check, title_findings = check_title(document, filename)
     checks: list[Check] = [title_check]
     findings: list[Finding] = title_findings
