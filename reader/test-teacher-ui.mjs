@@ -5,7 +5,7 @@ import { fileURLToPath } from "node:url";
 import { after, before, test } from "node:test";
 import axe from "axe-core";
 import { chromium } from "playwright-core";
-import { register, signIn } from "./product-helpers.mjs";
+import { register } from "./product-helpers.mjs";
 
 const app = process.env.A11YRA_TEACHER_URL || "http://127.0.0.1:5173/";
 const screenshots = process.env.A11YRA_SCREENSHOTS;
@@ -77,7 +77,6 @@ async function save(page, button, activate, filename) {
 }
 
 test("teacher flow by keyboard and mouse preserves all five repairs", { timeout: 120_000 }, async () => {
-  let credentials;
   for (const method of ["keyboard", "mouse"]) {
     const page = await browser.newPage({ reducedMotion: "reduce" });
     page.setDefaultTimeout(8000);
@@ -98,8 +97,8 @@ test("teacher flow by keyboard and mouse preserves all five repairs", { timeout:
       await page.waitForURL((url) => url.pathname === "/account/login");
       assert.equal(new URL(page.url()).searchParams.get("next"), "/upload?source=workspace#main");
       await page.getByRole("heading", { name: "Sign in", exact: true }).waitFor();
-      if (credentials) await signIn(page, app, credentials);
-      else credentials = await register(page, app);
+      // Each input method gets its own account and request budget.
+      await register(page, app);
       await page.goto(new URL("/upload", app).href);
       await page.getByLabel("Word document (required)").waitFor();
       if (method === "keyboard") {
@@ -145,7 +144,9 @@ test("teacher flow by keyboard and mouse preserves all five repairs", { timeout:
         await activate(page.getByRole("button", { name: "Apply fix" }));
         await page.getByRole("status").filter({ hasText: "Fix applied." }).waitFor();
         await activate(page.getByRole("link", { name: "Back to audit" }));
-        await page.getByText("Fixed, awaiting verification", { exact: true }).waitFor();
+        const findings = page.getByRole("tabpanel");
+        await findings.getByText("Fixed, awaiting verification", { exact: true }).waitFor();
+        assert.equal(await findings.getAttribute("aria-labelledby"), `check-${check}`);
       }
       await reAudit(page, activate);
       await page.getByRole("heading", { name: "Verified fixed (5)" }).waitFor();

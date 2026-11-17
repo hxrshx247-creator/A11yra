@@ -1,4 +1,9 @@
-Dates are based on source file modification times.
+# Submission evidence
+
+- [A11yra project report (PDF)](A11yra_Project_Report.pdf) — Architecture, code excerpts, lecture results, and verification through November 17, 2026.
+
+The archive below records the November 12, 2026 lecture walkthrough.
+
 - [original-lecture.docx](original-lecture.docx) — Submission copy of the original lecture (2026-11-12).
 - [repaired-lecture.docx](repaired-lecture.docx) — Repaired Word lecture (2026-11-12).
 - [repaired-reader.html](repaired-reader.html) — Offline HTML reader (2026-11-12).

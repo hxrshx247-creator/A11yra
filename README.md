@@ -4,29 +4,23 @@
 
 A11yra helps educators find and repair common accessibility barriers in Word documents. Teachers can re-audit their changes, download the repaired DOCX, or share a learner reader with adjustable text size, line spacing, theme, and a reading ruler.
 
-**Live demo:** [a11yra-api.onrender.com](https://a11yra-api.onrender.com/)
+## Judging submission
+
+- [Open the live demo](https://a11yra-api.onrender.com/) and choose **Try a messy handout** to audit the bundled Stacks and Queues lecture in a guest session.
+- [Read the project report (PDF)](docs/evidence/A11yra_Project_Report.pdf) for the project architecture, source excerpts, and verification results.
+- [See the submission evidence](docs/evidence/README.md) for the original and repaired Word files, the offline learner reader, and the recorded audit results. The sample went from **2 of 6** to **6 of 6** checks passed after four verified fixes.
 
 Project references: [accessibility test](docs/ACCESSIBILITY-TEST.md) · [security notes](docs/SECURITY-NOTES.md) · [deployment](docs/DEPLOYMENT.md) · [submission evidence](docs/evidence/README.md)
 
 ## Run locally
 
-**Fastest setup (Docker Compose):** with Docker Compose 2.24 or newer, run one command from the repository root:
+**Docker Compose** starts the web app, API, and Postgres. With Docker Compose 2.24 or newer, run this from the repository root:
 
 ```sh
 docker compose up --build --wait
 ```
 
-Then open [A11yra](http://127.0.0.1:5173/). After signing in, select **Try a messy handout** to audit the Stacks and Queues lecture. Use `docker compose down` to stop the app. `VITE_SHOW_ADVANCED=true` at build time shows the workspace, pricing, audit-history and account-management areas for extended demos.
-
-The manual Python and Node setup below is useful when you do not use Docker.
-
-**Docker Compose** starts the web app, API, and Postgres. Use Docker Compose 2.24 or newer and run this from the repository root:
-
-```sh
-docker compose up --build --wait
-```
-
-Open [A11yra](http://127.0.0.1:5173/). Run `docker compose down` to stop the app. The local database and documents are stored in Docker volumes.
+Open [A11yra](http://127.0.0.1:5173/) and choose **Try a sample audit**. The local workflow opens the lecture after sign-in. Run `docker compose down` to stop the app. The local database and documents are stored in Docker volumes. Set `VITE_SHOW_ADVANCED=true` at build time to include workspace, pricing, audit history, and account tools.
 
 **Without Docker**, use Python 3.12 and Node.js 24, the versions used in CI. The app uses SQLite and applies migrations at startup. Run the API in one terminal and the frontend in a second.
 
@@ -99,7 +93,7 @@ Open [http://127.0.0.1:5175/](http://127.0.0.1:5175/). Use that exact origin in 
 
 ## Try the four-minute demo
 
-1. Sign in and choose **Try a messy handout**. The Stacks and Queues lecture has a missing title and language, an undescribed image, and a generic link.
+1. On the hosted demo, choose **Try a messy handout**. In a local checkout, choose **Try a sample audit** and sign in. The Stacks and Queues lecture has a missing title and language, an undescribed image, and a generic link.
 2. Open each finding, inspect the lecture, and approve a title, language, image description, and useful link label. The sample keeps the six-page stack-and-queue lesson content.
 3. Select **Re-audit document**, then **Run re-audit**. Review the verified changes and open **View repaired screen reader view**.
 4. Continue to export. Open the downloaded offline HTML and try **Reading settings** and the one-click presets.
@@ -112,21 +106,17 @@ The six checks cover document title, default language, heading structure and lev
 
 ![Offline learner reader with the Low vision preset selected](docs/media/reader-low-vision.png)
 
-Demo video: [link to be added]
-
 ## Privacy and limitations
 
 Uploaded originals, working DOCX files, and the current audit are stored in private server storage. Working files expire after 24 hours by default; audit history has a separate retention period (30 days by default). A teacher can delete a document from its audit page before expiry. Published reader links have their own expiry and can be revoked.
 
 A11yra checks common, machine-detectable DOCX barriers; it does not certify WCAG conformance. It cannot reliably infer whether a picture is decorative, whether table cells make sense as headers, or whether a proposed heading and link label reflect the author’s intent. Teachers must inspect the source and learner reader. Complex layout, scanned documents, equations, charts, tracked changes, and non-main document stories may need manual review.
 
-## Built during the event vs pre-existing
+## Project history and credits
 
-Fill in this section before submission so judges can distinguish event work from prior work:
-
-- **Pre-existing:** [Add components, libraries, templates, or code that existed before the event.]
-- **Built or changed during AccessED Hacks:** [Add the event-built features and the team’s contributions.]
-- **Third-party assets and services:** [Add any external assets, libraries, or services used.]
+- The [first repository commit](https://github.com/hxrshx247-creator/A11yra/commit/79e6144) records the initial Word audit, repair, and export workflow on November 11, 2026.
+- The [hackathon demo commit](https://github.com/hxrshx247-creator/A11yra/commit/c9a1732) records the sample lecture, original-versus-working-copy screen reader preview, re-audit flow, and reader presets on November 12, 2026. Later commits added the formatted Word preview and finding highlights.
+- Third-party software includes React, Vite, FastAPI, python-docx, and Mammoth. The site uses [Fraunces and Atkinson Hyperlegible Next](frontend/public/fonts) under their included font licenses. Render hosts the live demo.
 
 ## Project layout
 
@@ -150,6 +140,6 @@ npm --prefix frontend run build
 node frontend/scripts/check-contrast.mjs
 ```
 
-For browser tests, install the dependencies with `npm --prefix reader ci`. On macOS or Linux, run `npx --prefix reader playwright-core install chromium`. On Windows, the runner uses Microsoft Edge by default. With ports 5173 and 8000 free, run `node reader/run-browser-tests.mjs` from the repository root. It starts isolated services and exercises the teacher workflow, public pages, and reader exports. See the [manual accessibility checklist](docs/ACCESSIBILITY-TEST.md) for screen-reader checks.
+For browser tests, install the dependencies with `npm --prefix reader ci`. On macOS or Linux, run `npx --prefix reader playwright-core install chromium`. On Windows, the runner uses Microsoft Edge by default. With ports 5173 and 8000 free, run `node reader/run-browser-tests.mjs` from the repository root. Each test file starts with its own local services and database. See the [manual accessibility checklist](docs/ACCESSIBILITY-TEST.md) for screen-reader checks.
 
 License: MIT ([full license text](LICENSE))

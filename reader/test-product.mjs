@@ -56,10 +56,13 @@ test("signup, four verified repairs, public reader, workspace and public pages",
     await page.getByText("6 of 6 checks passed", { exact: true }).waitFor();
     await page.getByRole("link", { name: "View repaired screen reader view" }).press("Enter");
     await page.getByRole("heading", { name: "Screen reader view" }).waitFor();
-    await page.getByRole("button", { name: "Repaired" }).waitFor();
-    assert.doesNotMatch(await page.locator(".reader-preview-list").innerText(), /Image: no description|Link: click here|Document title: none|Language: not set/);
-    await page.getByRole("button", { name: "Repaired" }).press("Tab");
-    assert.equal(await page.getByRole("list", { name: "Repaired document preview" }).evaluate(
+    const workingCopy = page.getByRole("button", { name: "Working copy", pressed: true });
+    await workingCopy.waitFor();
+    const repairedPreview = page.getByRole("list", { name: "Repaired document preview" });
+    await repairedPreview.getByText("Document title: Study Group Syllabus", { exact: true }).waitFor();
+    assert.doesNotMatch(await repairedPreview.innerText(), /Image: no description|Link: click here|Document title: none|Language: not set/);
+    await workingCopy.press("Tab");
+    assert.equal(await repairedPreview.evaluate(
       (list) => document.activeElement === list && list.matches(":focus-visible"),
     ), true);
     await scan(page);

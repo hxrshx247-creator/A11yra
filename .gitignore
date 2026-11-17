@@ -30,3 +30,7 @@ coverage/
 /frontend/src.zip
 /a11yra-ui-design.skill
 /Stacks and Queues Demo Lecture.docx
+/A11yra_Test/
+/output/
+/backend/browser-preview-api.*.log
+/frontend/browser-preview-web.*.log

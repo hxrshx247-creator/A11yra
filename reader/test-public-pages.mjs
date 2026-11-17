@@ -92,7 +92,10 @@ test("sample signup opens one audit with the next step", { timeout: 60_000, skip
       await page.getByLabel("Email address (required)").fill(`sample-${randomUUID()}@example.test`);
       await page.getByLabel("Password (required)").fill("a test password 123");
       await page.getByRole("button", { name: "Create an account" }).press("Enter");
-      await page.getByText("Choose a finding to see what it means, then review a fix.").waitFor();
+      await page.getByRole("heading", { name: "Document audit", exact: true }).waitFor();
+      const findings = page.getByRole("tabpanel");
+      await findings.getByText("Why it matters", { exact: true }).waitFor();
+      await findings.getByRole("link", { name: "Review fix for Document properties", exact: true }).waitFor();
     }
     await page.getByText("2 of 6 checks passed", { exact: true }).waitFor();
     if (!baseline) {
