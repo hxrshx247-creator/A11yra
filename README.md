@@ -1,28 +1,69 @@
 # A11yra
 
 [![CI](https://github.com/hxrshx247-creator/A11yra/actions/workflows/ci.yml/badge.svg)](https://github.com/hxrshx247-creator/A11yra/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-3b5b77)](LICENSE)
 
-A11yra helps educators find and repair common accessibility barriers in Word documents. Teachers can re-audit their changes, download the repaired DOCX, or share a learner reader with adjustable text size, line spacing, theme, and a reading ruler.
+A11yra helps educators find and repair accessibility barriers in Word documents, then share the repaired material in a reader learners can adjust.
 
-## Judging submission
+- **Audit six checks** for title, language, headings, image descriptions, table headers, and link text.
+- **Review each repair** with a Word layout preview and a linear screen reader preview.
+- **Verify changes** by running the audit again on the working copy.
+- **Share the result** as a repaired Word file, offline HTML, or a learner link you can revoke.
 
-- [Open the live demo](https://a11yra-api.onrender.com/) and choose **Try a messy handout** to audit the bundled Stacks and Queues lecture in a guest session.
-- [Read the project report (PDF)](docs/evidence/A11yra_Project_Report.pdf) for the project architecture, source excerpts, and verification results.
-- [See the submission evidence](docs/evidence/README.md) for the original and repaired Word files, the offline learner reader, and the recorded audit results. The sample went from **2 of 6** to **6 of 6** checks passed after four verified fixes.
+**[Live demo][demo] · [Project report (PDF)][report] · [Submission evidence][evidence]**
 
-Project references: [accessibility test](docs/ACCESSIBILITY-TEST.md) · [security notes](docs/SECURITY-NOTES.md) · [deployment](docs/DEPLOYMENT.md) · [submission evidence](docs/evidence/README.md)
+## Example result
 
-## Run locally
+The Stacks and Queues sample went from **2 of 6 checks passed** to **6 of 6** after four verified repairs.
 
-**Docker Compose** starts the web app, API, and Postgres. With Docker Compose 2.24 or newer, run this from the repository root:
+| Check | Before | After |
+| --- | --- | --- |
+| Document title | Missing | Stacks and Queues |
+| Default language | Missing | English (India), `en-IN` |
+| Image description | Missing | Description explains the removal order for stacks and queues |
+| Link text | “click here” | Further reading on stacks and queues |
+
+| Original screen reader preview | Repaired screen reader preview |
+| --- | --- |
+| ![Original preview shows a missing title and language](docs/media/screen-reader-original.png) | ![Repaired preview shows Stacks and Queues as the title and en-IN as the language](docs/media/screen-reader-repaired.png) |
+
+[Original Word file](docs/evidence/original-lecture.docx) · [Repaired Word file](docs/evidence/repaired-lecture.docx) · [Recorded results](docs/evidence/live-results.json)
+
+## How it works
+
+1. **Open a DOCX.** A11yra keeps the original and creates a working copy for repairs.
+2. **Review the findings.** Select a check to see what the audit found, why it matters, and what to change. Use the layout preview to locate the affected content.
+3. **Apply a repair and re-audit.** A fix is marked as awaiting verification until a fresh audit checks the working copy. The comparison shows verified repairs and findings that still need review.
+4. **Export or share.** Download the repaired DOCX or an offline reader, or publish a learner link. The reader offers adjustable text size, spacing, contrast, and a reading ruler.
+
+<p align="center">
+  <img src="docs/media/reader-low-vision.png" width="760" alt="Stacks and Queues learner reader with the Low vision preset, high contrast, large text, and a table of contents">
+</p>
+
+Save a copy of the [offline sample reader](docs/evidence/repaired-reader.html) and open the HTML file in a browser to try the reading settings.
+
+## Usage
+
+### Try the hosted demo
+
+1. Open the [live demo][demo] and select **Try a messy handout** to start a guest audit.
+2. Open the four findings and select **Review fix**. Use the values above or write your own image description and link label.
+3. Choose **Re-audit document**, then **Run re-audit**. Open **View repaired screen reader view** to inspect the working copy.
+4. Select **Continue to export** and download the offline HTML. Open it and try the **Low vision**, **Dyslexia-friendly**, or **Focus** preset.
+
+### Run locally with Docker
+
+Use Docker Compose 2.24 or newer. From the repository root, run:
 
 ```sh
 docker compose up --build --wait
 ```
 
-Open [A11yra](http://127.0.0.1:5173/) and choose **Try a sample audit**. The local workflow opens the lecture after sign-in. Run `docker compose down` to stop the app. The local database and documents are stored in Docker volumes. Set `VITE_SHOW_ADVANCED=true` at build time to include workspace, pricing, audit history, and account tools.
+Open [A11yra](http://127.0.0.1:5173/) and choose **Try a sample audit**. The lecture opens after sign-in. Run `docker compose down` to stop the services. Docker volumes retain the local database and files. Set `VITE_SHOW_ADVANCED=true` at build time to include workspace, pricing, audit history, and account tools.
 
-**Without Docker**, use Python 3.12 and Node.js 24, the versions used in CI. The app uses SQLite and applies migrations at startup. Run the API in one terminal and the frontend in a second.
+### Run locally without Docker
+
+Use Python 3.12 and Node.js 24, the versions used in CI. This setup uses SQLite and applies migrations at startup. Run the API and frontend in separate terminals.
 
 <details>
 <summary>Windows PowerShell</summary>
@@ -68,7 +109,8 @@ npm --prefix frontend run dev
 
 Both setups use [http://127.0.0.1:5173/](http://127.0.0.1:5173/). The defaults work without an API key or mail provider. For configuration, see [the environment template](.env.example).
 
-### Running on alternate ports
+<details>
+<summary>Use alternate ports</summary>
 
 If the default ports are occupied, use the following commands after installing the dependencies. This example uses API port `8005` and Vite port `5175`.
 
@@ -89,57 +131,56 @@ npm.cmd --prefix frontend run dev -- --port 5175
 
 Open [http://127.0.0.1:5175/](http://127.0.0.1:5175/). Use that exact origin in `A11YRA_CORS_ORIGINS` so sign-in accepts requests from Vite. On macOS or Linux, use `export NAME=value` for the same variables, `../.venv/bin/python` in the API terminal, and `npm` in the frontend terminal.
 
-**Windows:** If Application Control blocks a Python DLL, use Docker or a different environment.
+</details>
 
-## Try the four-minute demo
+## Verification
 
-1. On the hosted demo, choose **Try a messy handout**. In a local checkout, choose **Try a sample audit** and sign in. The Stacks and Queues lecture has a missing title and language, an undescribed image, and a generic link.
-2. Open each finding, inspect the lecture, and approve a title, language, image description, and useful link label. The sample keeps the six-page stack-and-queue lesson content.
-3. Select **Re-audit document**, then **Run re-audit**. Review the verified changes and open **View repaired screen reader view**.
-4. Continue to export. Open the downloaded offline HTML and try **Reading settings** and the one-click presets.
+The [project report][report] records 126 passing backend tests, 12 passing browser tests, and 132 passing contrast checks. See [GitHub Actions][ci] for the latest automated results and the [manual accessibility checklist](docs/ACCESSIBILITY-TEST.md) for assistive technology checks.
 
-The six checks cover document title, default language, heading structure and levels, image descriptions, table headers, and link text. The audit page includes a page layout preview of the working copy and a linear screen-reader preview that can switch between the original and repaired versions.
+<details>
+<summary>Run the checks locally</summary>
 
-| Original screen reader view | Repaired screen reader view |
-| --- | --- |
-| ![Original preview flags the missing document title and language](docs/media/screen-reader-original.png) | ![Repaired preview shows the document title and English (India) language tag](docs/media/screen-reader-repaired.png) |
+Activate the Python environment with `source .venv/bin/activate` on macOS or Linux, or `.\.venv\Scripts\Activate.ps1` on Windows. Use `npm.cmd` in PowerShell.
 
-![Offline learner reader with the Low vision preset selected](docs/media/reader-low-vision.png)
+```sh
+python -m pip install -r backend/requirements-dev.txt
+python -m pytest backend -q
+npm --prefix frontend ci
+npm --prefix frontend run build
+node frontend/scripts/check-contrast.mjs
+npm --prefix reader ci
+```
+
+On macOS or Linux, install the test browser with `npx --prefix reader playwright-core install chromium`. On Windows, the runner uses Microsoft Edge by default. With ports 5173 and 8000 free, run `node reader/run-browser-tests.mjs` from the repository root.
+
+</details>
 
 ## Privacy and limitations
 
-Uploaded originals, working DOCX files, and the current audit are stored in private server storage. Working files expire after 24 hours by default; audit history has a separate retention period (30 days by default). A teacher can delete a document from its audit page before expiry. Published reader links have their own expiry and can be revoked.
+Uploads and working copies are private. By default, working files expire after 24 hours and audit history after 30 days. Teachers can delete uploads and revoke published reader links. See the [security notes](docs/SECURITY-NOTES.md) and [deployment guide](docs/DEPLOYMENT.md).
 
-A11yra checks common, machine-detectable DOCX barriers; it does not certify WCAG conformance. It cannot reliably infer whether a picture is decorative, whether table cells make sense as headers, or whether a proposed heading and link label reflect the author’s intent. Teachers must inspect the source and learner reader. Complex layout, scanned documents, equations, charts, tracked changes, and non-main document stories may need manual review.
-
-## Project history and credits
-
-- The [first repository commit](https://github.com/hxrshx247-creator/A11yra/commit/79e6144) records the initial Word audit, repair, and export workflow on November 11, 2026.
-- The [hackathon demo commit](https://github.com/hxrshx247-creator/A11yra/commit/c9a1732) records the sample lecture, original-versus-working-copy screen reader preview, re-audit flow, and reader presets on November 12, 2026. Later commits added the formatted Word preview and finding highlights.
-- Third-party software includes React, Vite, FastAPI, python-docx, and Mammoth. The site uses [Fraunces and Atkinson Hyperlegible Next](frontend/public/fonts) under their included font licenses. Render hosts the live demo.
+A11yra checks common barriers it can detect in a DOCX. Teachers still need to review reading order, the meaning of headings and descriptions, and complex content such as equations or scanned pages. The score measures the checks A11yra evaluated. WCAG conformance requires a broader review.
 
 ## Project layout
 
 | Path | Contents |
 | --- | --- |
-| [frontend/](frontend/) | React and TypeScript app for educators |
-| [backend/](backend/) | FastAPI, DOCX audit and repair, database migrations, and sample fixtures |
+| [frontend/](frontend/) | React and TypeScript teacher workspace |
+| [backend/](backend/) | FastAPI, Word audit and repair, exports, database migrations, and sample documents |
 | [reader/](reader/) | Learner reader assets and browser tests |
-| [docs/](docs/) | Setup, operations, API, and accessibility references |
+| [docs/](docs/) | Setup, operations, accessibility references, and [submission evidence][evidence] |
 
-The [local API reference](http://127.0.0.1:5173/api/docs) is available when the app is running.
+The app serves [interactive API docs](http://127.0.0.1:5173/api/docs) when running locally.
 
-## Verify a checkout
+## History and credits
 
-From the repository root, activate the Python environment with `source .venv/bin/activate` on macOS or Linux. On Windows, use `.\.venv\Scripts\Activate.ps1` and substitute `npm.cmd` for `npm` below.
+- The [first repository commit](https://github.com/hxrshx247-creator/A11yra/commit/79e6144) records the initial Word audit, repair, and export workflow on November 11, 2026.
+- The [hackathon demo commit](https://github.com/hxrshx247-creator/A11yra/commit/c9a1732) records the sample lecture, screen reader previews, re-audit flow, and reader presets on November 12, 2026. Later commits added the formatted Word preview and finding highlights.
+- A11yra uses React, Vite, FastAPI, python-docx, and Mammoth. The site bundles [Fraunces and Atkinson Hyperlegible Next](frontend/public/fonts) with their font licenses. Render hosts the demo.
 
-```sh
-python -m pip install -r backend/requirements-dev.txt
-python -m pytest backend -q
-npm --prefix frontend run build
-node frontend/scripts/check-contrast.mjs
-```
+[MIT license](LICENSE)
 
-For browser tests, install the dependencies with `npm --prefix reader ci`. On macOS or Linux, run `npx --prefix reader playwright-core install chromium`. On Windows, the runner uses Microsoft Edge by default. With ports 5173 and 8000 free, run `node reader/run-browser-tests.mjs` from the repository root. Each test file starts with its own local services and database. See the [manual accessibility checklist](docs/ACCESSIBILITY-TEST.md) for screen-reader checks.
-
-License: MIT ([full license text](LICENSE))
+[demo]: https://a11yra-api.onrender.com/
+[report]: docs/evidence/A11yra_Project_Report.pdf
+[evidence]: docs/evidence/README.md
+[ci]: https://github.com/hxrshx247-creator/A11yra/actions/workflows/ci.yml
