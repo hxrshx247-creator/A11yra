@@ -12,7 +12,8 @@ dist/
 .env.*
 !.env.example
 *.key
-backend/*.db*
+*.db
+*.db-*
 *.sqlite
 *.sqlite-*
 *.sqlite3
@@ -34,3 +35,6 @@ coverage/
 /output/
 /backend/browser-preview-api.*.log
 /frontend/browser-preview-web.*.log
+.DS_Store
+Thumbs.db
+Desktop.ini

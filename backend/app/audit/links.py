@@ -21,7 +21,7 @@ def iter_link_elements(paragraph):
 
 
 def link_label_issue(label: str) -> str | None:
-    """Describe the problem with a generic or empty link label, if any."""
+    """Identify generic labels and labels that consist of a URL."""
     normalized = " ".join(label.split()).strip(" .?!…:;()[]").casefold()
     if normalized in GENERIC_LABELS:
         return "generic"
