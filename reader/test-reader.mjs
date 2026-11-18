@@ -103,6 +103,29 @@ for (const name of ["offline.html", join("bundle", "index.html")]) {
       assert.equal(await rulerPosition.inputValue(), "100");
       assert.equal(await page.locator("#reading-ruler").evaluate((node) =>
         node.style.getPropertyValue("--ruler-position")), "100%");
+      const movement = await page.locator("main").evaluate((main) => {
+        const ruler = main.querySelector("#reading-ruler");
+        const center = main.getBoundingClientRect().top + main.offsetHeight / 2;
+        const move = (clientY, pointerType = "mouse") =>
+          main.dispatchEvent(new PointerEvent("pointermove", { clientY, pointerType }));
+        move(center);
+        const before = ruler.getBoundingClientRect();
+        move(center + 2);
+        const after = ruler.getBoundingClientRect();
+        move(center + 20, "touch");
+        return {
+          distance: after.top - before.top,
+          height: after.height,
+          fontSize: parseFloat(getComputedStyle(ruler).fontSize),
+          touchDistance: ruler.getBoundingClientRect().top - after.top,
+        };
+      });
+      assert.ok(Math.abs(movement.distance - 2) < .1, "Ruler follows small pointer movements without percentage jumps");
+      assert.ok(Math.abs(movement.height - movement.fontSize * 2.4) < 1, "Ruler matches the homepage band height");
+      assert.equal(movement.touchDistance, 0);
+      await rulerPosition.press("Home");
+      assert.equal(await page.locator("#reading-ruler").evaluate((node) =>
+        node.style.getPropertyValue("--ruler-position")), "0%");
       await page.getByLabel("Enable single-key shortcuts").uncheck();
       await page.reload();
       assert.equal(await page.locator("html").getAttribute("data-motion"), "off");

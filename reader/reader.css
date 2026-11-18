@@ -189,11 +189,11 @@ main {
 #reading-ruler {
   position: absolute;
   inset-inline: 0;
-  top: clamp(0px, calc(var(--ruler-position, 25%) - .75em), calc(100% - 1.5em));
-  height: 1.5em;
+  top: clamp(0px, calc(var(--ruler-position, 25%) - 1.2em), calc(100% - 2.4em));
+  height: 2.4em;
   font-size: var(--reading-size);
   border-block: 1px solid var(--accent);
-  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  background: color-mix(in srgb, var(--sky) 22%, transparent);
   pointer-events: none;
 }
 #ruler-controls { display: grid; gap: .25rem; }
