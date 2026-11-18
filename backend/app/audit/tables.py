@@ -5,10 +5,12 @@ from app.models import Check, CheckResult, Finding
 
 
 def body_tables(document: Document):
+    """Return the tables in the document body."""
     return document.element.body.xpath(f".//w:tbl[{BODY_CONTENT}]")
 
 
 def table_rows(table):
+    """Return the rows belonging to a table."""
     return [
         row for row in table.xpath(f".//w:tr[{BODY_CONTENT}]")
         if row.xpath("ancestor::w:tbl[1]")[0] is table
@@ -16,6 +18,7 @@ def table_rows(table):
 
 
 def check_tables(document: Document) -> tuple[Check, list[Finding]]:
+    """Check whether the first row of each eligible table marks its headers."""
     findings: list[Finding] = []
     table_count = 0
     for table_index, table in enumerate(body_tables(document)):

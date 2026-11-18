@@ -21,6 +21,7 @@ class InvalidExport(Exception):
 def prepare_docx_export(
     store: DocumentStore, document_id: UUID,
 ) -> bytes | None:
+    """Return the verified working DOCX if it is available and readable."""
     with store.locked_session(document_id) as session:
         if session is None:
             return None

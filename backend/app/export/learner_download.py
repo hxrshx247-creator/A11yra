@@ -12,6 +12,7 @@ from app.export.learner_reader import render_learner_bundle, render_learner_html
 def prepare_learner_download(
     store: DocumentStore, document_id: UUID, offline: bool,
 ) -> bytes | None:
+    """Export a verified working copy as offline reader HTML or a ZIP bundle."""
     with store.locked_session(document_id) as session:
         if session is None:
             return None

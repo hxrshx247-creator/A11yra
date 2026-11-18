@@ -108,11 +108,12 @@
   }
 
   rulerPosition.addEventListener("input", positionRuler);
-  article.addEventListener("pointermove", (event) => {
+  article.parentElement.addEventListener("pointermove", (event) => {
     if (!rulerEnabled.checked || event.pointerType === "touch") return;
     const mainBounds = article.parentElement.getBoundingClientRect();
-    rulerPosition.value = String(Math.round(100 * (event.clientY - mainBounds.top) / mainBounds.height));
-    positionRuler();
+    const offset = Math.max(0, Math.min(mainBounds.height, event.clientY - mainBounds.top));
+    rulerPosition.value = String(100 * offset / mainBounds.height);
+    ruler.style.setProperty("--ruler-position", offset + "px");
   });
 
   function applySettings() {

@@ -32,6 +32,7 @@ def _read_bundled_preview() -> dict:
 
 
 def bundled_preview(contents: bytes, flags: list[Finding] | None) -> tuple[list[str], dict] | None:
+    """Return pre-rendered pages when the document matches the bundled sample."""
     # Only the public demo fixture is eligible for the shared preview.
     preview = _read_bundled_preview()
     if sha256(contents).hexdigest() != preview.get("digest"):
@@ -90,6 +91,7 @@ def _flag_positions(pdf: Path, findings: list[Finding], prefix: str) -> dict:
 
 
 def render_preview_pages(contents: bytes, flags: list[Finding] | None = None) -> tuple[list[str], dict]:
+    """Render Word preview pages and locate audit flags on them."""
     office, rasterizer = which("soffice"), which("pdftoppm")
     if not office or not rasterizer or not _renderer.acquire(timeout=15):
         return [], {}

@@ -1,105 +1,47 @@
 {
-  "axeLanding": [],
-  "lectureOriginal": {
-    "score": "2/6",
-    "lines": [
-      "Document title: none (file name will be read instead)",
-      "Language: not set",
-      "Image: no description",
-      "Link: click here"
-    ]
+  "environment": "local Vite and FastAPI",
+  "browser": "157.0.4341.60",
+  "axe": {
+    "landing": [],
+    "upload": [],
+    "originalAudit": [],
+    "repairedAudit": [],
+    "offlineReader": []
   },
-  "axeOriginalAudit": [],
-  "appRepairSeconds": 17.8,
-  "lectureRepaired": {
-    "score": "6/6",
-    "verified": 4,
-    "oldLinesAbsent": true,
+  "originalScore": "2 of 6 checks passed",
+  "originalPreviewFindings": [
+    "Document title: none (file name will be read instead)",
+    "Language: not set",
+    "Image: no description",
+    "Link: click here"
+  ],
+  "repairedScore": "6 of 6 checks passed",
+  "verifiedFixes": 4,
+  "previewKeyboard": {
     "tabFocus": true,
-    "keyboardScroll": true,
+    "scroll": true,
     "tabLeavesPreview": true
   },
-  "axeRepairedScreenReaderView": [],
-  "crossGuest": {
-    "/audit": 404,
-    "/reader-preview": 404,
-    "/export/docx": 404,
-    "/export/html?offline=true": 404
-  },
-  "legacyFixture": "OLE signature only",
-  "invalidUploads": {
-    "corrupt": {
-      "status": 422,
-      "code": "corrupt_docx"
-    },
-    "legacyRenamed": {
-      "status": 422,
-      "code": "corrupt_docx"
-    },
-    "empty": {
-      "status": 422,
-      "code": "corrupt_docx"
-    },
-    "wrongType": {
-      "status": 415,
-      "code": "invalid_file_type"
-    },
-    "oversized": {
-      "status": 413,
-      "code": "file_too_large"
-    }
-  },
-  "delete": "204 then 404",
-  "retentionCopy": "Uploads are stored privately. Working files expire after 24 hours; you can delete a document sooner from its audit page. Retention and privacy",
-  "axeUpload": [],
-  "teacherDialogEscapeReturnsFocus": true,
-  "messy": {
-    "initial": {
-      "passed": 0,
-      "evaluated": 6,
-      "percent": 0
-    },
-    "reaudit": {
-      "passed": 0,
-      "evaluated": 6,
-      "percent": 0
-    },
-    "judgmentFindings": [
-      {
-        "id": "img-001",
-        "evidence": "The alt text looks like a filename, which may not describe the picture."
-      }
-    ]
-  },
-  "axeOfflineReader": [],
   "offline": {
-    "markup": {
-      "headings": 20,
-      "images": [
-        "Stacks remove the most recently added item first. Queues remove the earliest added item first."
-      ],
-      "headerScopes": [
-        "col",
-        "col",
-        "col",
-        "col",
-        "col",
-        "col"
-      ],
-      "width": 360
-    },
-    "reflow": {
-      "viewport": 640,
-      "scroll": 640,
-      "dpr": 2
+    "headings": 20,
+    "columnHeaderScopes": 6,
+    "viewport": 640,
+    "scrollWidth": 640,
+    "devicePixelRatio": 2,
+    "presets": [
+      "Low vision",
+      "Dyslexia-friendly",
+      "Focus"
+    ],
+    "lowVision": {
+      "textSize": "175",
+      "spacing": "wide",
+      "theme": "contrast",
+      "motion": "off"
     },
     "networkRequests": 0,
-    "threePresets": true,
-    "persistence": true,
+    "persistedPreset": true,
     "ruler": true,
-    "shortcuts": true,
-    "escapeReturnsFocus": true,
-    "reducedMotion": true,
-    "printPdf": true
+    "escapeReturnsFocus": true
   }
 }

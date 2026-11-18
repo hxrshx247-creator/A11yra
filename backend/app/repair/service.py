@@ -27,6 +27,7 @@ REPAIRS = {
 
 
 def apply_fixes(document: WordDocument, audit: Audit, fixes: list[Fix]) -> FixResponse:
+    """Apply eligible fixes and mark successful repairs as awaiting verification."""
     findings = {finding.id: finding for finding in audit.findings}
     result = FixResponse(applied=[], skipped=[])
     for fix in fixes:
@@ -53,6 +54,7 @@ def apply_fixes(document: WordDocument, audit: Audit, fixes: list[Fix]) -> FixRe
 
 
 def repair_document(store: DocumentStore, document_id: UUID, fixes: list[Fix]) -> FixResponse | None:
+    """Save successful repairs to the working copy and its audit."""
     with store.locked_session(document_id) as session:
         if session is None:
             return None

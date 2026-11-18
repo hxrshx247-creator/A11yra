@@ -63,6 +63,7 @@ def _half_points(value: str | None) -> int:
 
 
 def check_headings(document: Document) -> tuple[Check, list[Finding]]:
+    """Check the heading outline and flag text that may be styled as a heading."""
     try:
         styles = document.part.part_related_by(RT.STYLES).styles
     except KeyError:

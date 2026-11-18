@@ -9,7 +9,7 @@ Use the [demo syllabus](../backend/fixtures/syllabus.docx) in Edge on Windows. R
 - [ ] Move among the check cards with Up and Down. Confirm the active card and its findings are announced.
 - [ ] Review the image finding. Confirm the purpose controls announce their selection and the required alt-text field has a label.
 - [ ] Apply a description. Confirm the status is announced. Re-audit and confirm the before-and-after counts and the verified finding.
-- [ ] Choose each learner format on separate uploads. Confirm the downloaded filename and the message about session cleanup.
+- [ ] Download the offline HTML and HTML ZIP from the same verified audit. Confirm each filename and download message. Return to the audit to confirm it is still available.
 
 ## Learner reader
 
@@ -24,9 +24,9 @@ Use the [demo syllabus](../backend/fixtures/syllabus.docx) in Edge on Windows. R
 
 Automated tests check specific behavior and markup. They cannot establish whether a learner can complete the task comfortably, whether reading order makes sense, or whether an image description conveys the right information.
 
-## Tested and not tested
+## Verification coverage
 
-Automated checks covered axe on the landing page, upload form, audit dashboard, screen reader preview, and exported reader. Browser tests checked keyboard focus, scrolling, Escape and focus return, reduced motion, reader settings, and offline use. Export tests checked document language, headings, image descriptions, decorative images, and table headers. A narrow-viewport reflow check passed; it approximated 200% zoom.
+Automated checks covered axe on the landing page, upload form, audit dashboard, screen reader preview, and exported reader. Browser tests checked keyboard focus, scrolling, Escape and focus return, reduced motion, reader settings, and offline use. Export tests checked document language, headings, image descriptions, decorative images, and table headers. See the [lecture verification evidence](evidence/REPORT_FACTS.md) for measured reflow and axe results.
 
 Manual results to fill in after testing:
 

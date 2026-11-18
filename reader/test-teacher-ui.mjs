@@ -125,7 +125,8 @@ test("teacher flow by keyboard and mouse preserves all five repairs", { timeout:
       ]) {
         const tab = page.locator(`#check-${check}`);
         await activate(tab);
-        await activate(page.getByRole("link", { name: /^Review fix/ }));
+        const panel = page.getByRole("tabpanel").and(page.locator(`#findings-${check}`));
+        await activate(panel.getByRole("link", { name: /^Review fix/ }));
         await page.getByRole("button", { name: "Apply fix" }).waitFor();
         if (method === "keyboard") {
           await scan(page);
@@ -142,7 +143,9 @@ test("teacher flow by keyboard and mouse preserves all five repairs", { timeout:
         else if (method === "keyboard") await page.getByRole("checkbox", { name: /Mark the first row/ }).press("Space");
         else await page.getByRole("checkbox", { name: /Mark the first row/ }).click();
         await activate(page.getByRole("button", { name: "Apply fix" }));
-        await page.getByRole("status").filter({ hasText: "Fix applied." }).waitFor();
+        await page.getByRole("status").filter({ hasText: "Fix applied." }).waitFor().catch(async (cause) => {
+          throw new Error(`${method} ${check} repair at ${page.url()}: ${await page.locator("#repair-error").textContent().catch(() => "no form error")}`, { cause });
+        });
         await activate(page.getByRole("link", { name: "Back to audit" }));
         const findings = page.getByRole("tabpanel");
         await findings.getByText("Fixed, awaiting verification", { exact: true }).waitFor();
