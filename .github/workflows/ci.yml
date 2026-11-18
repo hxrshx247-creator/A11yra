@@ -30,6 +30,7 @@ jobs:
         working-directory: backend
       - run: npm ci
         working-directory: frontend
+      - run: node frontend/scripts/check-glob-security.mjs
       - run: npm run build
         working-directory: frontend
       - run: npm ci
