@@ -130,6 +130,8 @@ The [November 18, 2026 CI run](https://github.com/hxrshx247-creator/A11yra/actio
 
 On November 19, 2026, commit `96d8032` was deployed to the live demo. A fresh HTML download was opened offline and verified for the wider ruler, precise pointer tracking, keyboard slider control, zero network requests, and zero script errors.
 
+Word Accessibility Checker and actual browser zoom checks were completed, as confirmed by the project owner. **Only NVDA verification remains pending** because of difficulties encountered during testing.
+
 See [local verification commands](CONTRIBUTING.md), [GitHub Actions][ci], and the [manual accessibility checklist](docs/ACCESSIBILITY-TEST.md).
 
 ## Privacy and limitations
