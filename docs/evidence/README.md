@@ -2,8 +2,7 @@
 
 | File | Contents |
 | --- | --- |
-| [Project report](A11yra_Project_Report.pdf) | Architecture, source excerpts, and the lecture walkthrough. |
-| [Report facts](REPORT_FACTS.md) | Results and source references for the next report revision. |
+| [Verification facts](REPORT_FACTS.md) | Recorded results and source references for the judging release. |
 | [Live results](live-results.json) | Local browser observations from the lecture repair and offline reader. |
 | [Original lecture](original-lecture.docx) | DOCX input used by the recording command. |
 | [Repaired lecture](repaired-lecture.docx) | Saved DOCX with title, language, image description, and link text repaired. |

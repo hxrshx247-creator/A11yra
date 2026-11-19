@@ -2,7 +2,7 @@
 
 A11yra helps educators find and repair accessibility barriers in Word documents, then share the repaired material in a reader learners can adjust.
 
-**[Live demo][demo] · [Project report (PDF)][report] · [Submission evidence][evidence]**
+**[Live demo][demo] · [Submission evidence][evidence]**
 
 - **Audit six checks** for title, language, headings, image descriptions, table headers, and link text.
 - **Review, repair, and re-audit** with a Word layout preview and a linear screen reader preview.
@@ -45,7 +45,12 @@ The Stacks and Queues sample went from **2 of 6 checks passed** to **6 of 6** af
 
 ![Stacks and Queues learner reader with the Low vision preset, high contrast, large text, and a table of contents](docs/evidence/reader-low-vision.png)
 
-Save a copy of the [offline sample reader](docs/evidence/repaired-reader.html) and open it in a browser to try the reading settings.
+Download a fresh offline HTML from the [live demo][demo] and open it in a browser to try the reading settings.
+
+## Latest fixes
+
+- **Reading ruler.** New offline HTML and ZIP exports use the homepage preview's wider blue highlight and smooth pointer tracking. The ruler follows small movements precisely on long documents, and the position slider supports keyboard control.
+- **Dependency security.** The frontend pins the reviewed `@ryotsu/picomatch@4.0.7-a` security fork to address CVE-2026-112366 while upstream has no patched release. CI checks the vulnerable matching patterns and ordinary build globs. See the [dependency security notes](docs/SECURITY-NOTES.md#build-dependencies).
 
 ## Run locally without Docker
 
@@ -121,7 +126,9 @@ Open [the local app on port 5175](http://127.0.0.1:5175/). Use that exact origin
 
 ## Verification
 
-Verified November 17, 2026. The backend suite passed **126 tests**, the browser suite passed **12 tests**, and the contrast script passed **132 checks**. The TypeScript check and Vite production build passed.
+The [November 18, 2026 CI run](https://github.com/hxrshx247-creator/A11yra/actions/runs/44282174340) passed **126 backend tests**, **12 browser tests**, and **132 contrast checks**, along with the TypeScript check, Vite production build, and glob security regression check. All four jobs passed, including dependency audits, PostgreSQL migrations, and Docker Compose verification. The frontend dependency audit reported zero vulnerabilities.
+
+On November 19, 2026, commit `96d8032` was deployed to the live demo. A fresh HTML download was opened offline and verified for the wider ruler, precise pointer tracking, keyboard slider control, zero network requests, and zero script errors.
 
 See [local verification commands](CONTRIBUTING.md), [GitHub Actions][ci], and the [manual accessibility checklist](docs/ACCESSIBILITY-TEST.md).
 
@@ -152,6 +159,5 @@ The app serves [interactive API docs](http://127.0.0.1:5173/api/docs) when runni
 [MIT license](LICENSE)
 
 [demo]: https://a11yra-api.onrender.com/
-[report]: docs/evidence/A11yra_Project_Report.pdf
 [evidence]: docs/evidence/README.md
 [ci]: https://github.com/hxrshx247-creator/A11yra/actions/workflows/ci.yml

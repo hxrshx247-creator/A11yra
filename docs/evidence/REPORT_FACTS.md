@@ -1,6 +1,6 @@
-# Report facts for the judging release
+# Verification facts for the judging release
 
-Checked on November 17, 2026. The current PDF uses checkout `FA4E4B8` in its footer. Replace it with the short hash supplied for the final judging-prep commit.
+These facts were checked on November 17, 2026. See the [README verification section](../../README.md#verification) for subsequent CI and live export results.
 
 ## Verification
 
