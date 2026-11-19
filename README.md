@@ -26,16 +26,34 @@ docker compose up --build --wait
 
 Open [the local A11yra app](http://127.0.0.1:5173/) and choose **Try a sample audit**. Create an account or sign in to open the lecture. Run `docker compose down` to stop the services. Docker volumes retain the local database and files.
 
+## Input
+
+Upload an educational **Word document (.docx)**, such as a lecture, syllabus, worksheet, or handout, or open the bundled sample. Documents can contain paragraphs, headings, images, tables, lists, and hyperlinks. A11yra validates the package and stores an original and a working copy.
+
+For eligible findings, teachers can supply or approve a document title, default language tag, image description or decorative designation, descriptive link text, table header row, or heading level.
+
+## Output
+
+- **Audit and verification results.** Six check results, findings with supporting evidence and repair guidance, a Word layout preview, and an approximate linear screen reader preview. Re-audit shows verified fixes, remaining findings, new findings, and items needing review.
+- **Repaired Word document.** Download `a11yra-repaired.docx` with approved repairs. Applied fixes must be re-audited before downloading.
+- **Offline HTML.** Download `a11yra-reader.html` and open the single file directly in a browser.
+- **Offline HTML ZIP.** Download `a11yra-reader.zip`, extract it, and open `index.html`. The bundle includes the reader assets and document images.
+- **Published learner link.** Share an HTML snapshot through a link that can expire or be revoked. Anyone holding a valid link can open the snapshot.
+
+Both offline formats include a table of contents, heading navigation, image descriptions and table headers where available, and adjustable reading settings. Learners can select text sizes from **100% to 200%**, line spacing, light/dark/high contrast themes, font and spacing options, and motion preferences. The **Low vision**, **Dyslexia-friendly**, and **Focus** presets provide starting points.
+
+The wider blue reading ruler follows pointer movements smoothly and also supports a keyboard-controlled position slider. Optional single-key shortcuts, keyboard help, saved preferences where browser storage is available, and read-along with a suitable local voice support navigation and reading. A print layout supports the browser's Print or Save as PDF function.
+
+Deployments with advanced workspace tools enabled also provide audit history, workspace activity, dashboard summaries, activity and dashboard CSV exports, and an account-data JSON export.
+
 ## Example result
 
 The Stacks and Queues sample went from **2 of 6 checks passed** to **6 of 6** after four verified repairs.
 
-| Check | Before | After |
-| --- | --- | --- |
-| Document title | Missing | Stacks and Queues |
-| Default language | Missing | English (India), `en-IN` |
-| Image description | Missing | Stacks remove the most recently added item first. Queues remove the earliest added item first. |
-| Link text | “click here” | Further reading on stacks and queues |
+- **Document title** changed from missing to “Stacks and Queues.”
+- **Default language** changed from missing to English (India), `en-IN`.
+- **Image description** changed from missing to “Stacks remove the most recently added item first. Queues remove the earliest added item first.”
+- **Link text** changed from “click here” to “Further reading on stacks and queues.”
 
 | Original screen reader preview | Repaired screen reader preview |
 | --- | --- |
